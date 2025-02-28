@@ -53,8 +53,8 @@ app.use("/api/feedback", feedbackRoute);
 
 setupSwagger(app);
 
-const HOST_NAME = process.env.HOST_NAME;
-//const HOST_NAME = "192.168.1.65";
+//const HOST_NAME = process.env.HOST_NAME;
+const HOST_NAME = "0.0.0.0";
 const PORT = process.env.PORT;
 
 app.listen(PORT, HOST_NAME, () => {
