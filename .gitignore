@@ -1,0 +1,42 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+logs/
+*.log
+*.log.*
+debug.log
+error.log
+pm2.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# Build & temp files
+dist/
+build/
+.tmp/
+.cache/
+coverage/
+.DS_Store
+
+# Editor & OS-specific files
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+
+# TypeScript (nếu có)
+*.tsbuildinfo
