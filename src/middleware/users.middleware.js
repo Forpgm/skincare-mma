@@ -184,11 +184,10 @@ exports.accessTokenValidator = validate(
                 status: HTTP_STATUS.UNAUTHORIZED,
               });
             }
-
             try {
               const decoded_authorization = await verifyToken({
                 token: access_token,
-                secretOrPublickey: process.env.JWT_SECRET_ACCESS_TOKEN,
+                secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN,
               });
               req.decoded_authorization = decoded_authorization;
             } catch (error) {

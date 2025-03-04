@@ -8,6 +8,7 @@ exports.USERS_MESSAGES = {
   EMAIL_ALREADY_EXISTS: "Email already exists",
   EMAIL_IS_REQUIRED: "Email is required",
   EMAIL_IS_INVALID: "Email is invalid",
+  EMAIL_NOT_EXIST: "Email not exist",
   // password
   PASSWORD_IS_REQUIRED: "Password is required",
   PASSWORD_MUST_BE_A_STRING: "Password must be a string",
@@ -79,4 +80,10 @@ exports.PRODUCTS_MESSAGES = {
   ADD_PRODUCT_SUCCESSFULLY: "Add product successfully",
   UPDATE_PRODUCT_SUCCESSFULLY: "Update product successfully",
   DELETE_PRODUCT_SUCCESSFULLY: "Delete product successfully",
+};
+exports.WISH_LIST_MESSAGES = {
+  ADD_WISH_LIST_SUCCESSFULLY: "Add product to wish list successfully",
+  WISH_LIST_NOT_FOUND: "Wish list not found",
+  DELETE_WISH_LIST_SUCCESSFULLY: "Delete wish list successfully",
+  GET_WISH_LIST_SUCCESSFULLY: "Get wish list successfully",
 };

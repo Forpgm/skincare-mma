@@ -1,8 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const db = require("../models/index");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const {
   registerController,
   loginController,
@@ -10,16 +7,19 @@ const {
   forgotPasswordController,
   verifyforgotPasswordController,
   resetPasswordController,
-} = require("../controller/users.controller");
+} = require("../controller/users.controllers");
 const {
   registerValidator,
   loginValidator,
-  accessTokenValidator,
+
   refreshTokenValidator,
   forgotPasswordValidator,
   verifyForgotPasswordTokenValidator,
   resetPasswordValidator,
+  accessTokenValidator,
 } = require("../middleware/users.middleware");
+const { addWishListController } = require("../controller/wishlist.controllers");
+const { addWishListValidator } = require("../middleware/wishList.middleware");
 
 const userRoute = express.Router();
 userRoute.use(bodyParser.json());
@@ -195,4 +195,5 @@ userRoute.post(
 
 // get new accessToken & refreshToken
 userRoute.post("/refresh-token", refreshTokenValidator, refreshTokenController);
+
 module.exports = userRoute;

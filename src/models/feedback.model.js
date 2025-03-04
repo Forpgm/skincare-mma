@@ -2,21 +2,21 @@ const mongoose = require("mongoose");
 
 const feedbackSchema = new mongoose.Schema(
   {
-    fromAccount: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Account",
-      required: true,
+      required: { type: true, message: "User is required" },
     },
-    product: {
+    order_detail_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
+      ref: "OrderDetail",
+      required: { type: true, message: "Order Detail is required" },
     },
     content: {
       type: String,
       required: true,
     },
-    rating: {
+    rating_number: {
       type: Number,
       required: true,
     },

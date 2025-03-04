@@ -162,6 +162,43 @@ class ProductService {
 
     return updatedProduct;
   }
+
+  async getProductDetail(productId) {
+    const product = await db.Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    const thumbnails = await db.Image.find({
+      parent_id: product._id,
+      type: IMAGE_TYPE.PRODUCT,
+    });
+
+    const productVariations = await db.ProductVariation.find({
+      product_id: product._id,
+    });
+
+    const brand = await db.Brand.findById(product.brand_id);
+
+    return {
+      ...product._doc,
+      images: thumbnails.map((thumbnail) => thumbnail.image_url),
+      variations: productVariations.map((variation) => {
+        return {
+          ..._.omit(variation._doc, [
+            "product_id",
+            "createdBy",
+            "updatedBy",
+            "createdAt",
+            "updatedAt",
+            "__v",
+          ]),
+          images: variation.images,
+        };
+      }),
+      brand: brand.name,
+    };
+  }
 }
 
 const productService = new ProductService();

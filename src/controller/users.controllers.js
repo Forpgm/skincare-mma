@@ -1,4 +1,3 @@
-const { log } = require("handlebars");
 const { USERS_MESSAGES } = require("../constants/message");
 const usersService = require("../services/users.service");
 const {

@@ -13,7 +13,7 @@ exports.getProductsController = async (req, res, next) => {
 };
 exports.getProductDetailController = async (req, res, next) => {
   try {
-    const result = await productService.getProductDetail();
+    const result = await productService.getProductDetail(req.params.id);
     res.status(200).json({
       message: "Get product detail successfully",
       result,

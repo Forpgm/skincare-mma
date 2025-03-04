@@ -22,6 +22,11 @@ const feedbackRoute = require("./src/routes/feedbackRoute");
 const { ErrorWithStatus } = require("./src/models/errors");
 const { omit } = require("lodash");
 const userRoute = require("./src/routes/userRoute");
+const wishListRoute = require("./src/routes/wishlistRoute");
+const quizRouter = require("./src/routes/quizRoute");
+const quizQuestionRoute = require("./src/routes/quizQuestionRoute");
+const quizAnswerRoute = require("./src/routes/quizAnswerRoute");
+const quizTemplateScoreRouter = require("./src/routes/quizTemplateScoreRoute");
 
 var app = express();
 app.use(cors());
@@ -50,7 +55,11 @@ app.use("/api/dashboard", dashboardRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/customers", customerRoute);
 app.use("/api/feedback", feedbackRoute);
-
+app.use("/api/wishList", wishListRoute);
+app.use("/api/quizzes", quizRouter);
+app.use("/api/quizQuestions", quizQuestionRoute);
+app.use("/api/quizAnswers", quizAnswerRoute);
+app.use("/api/quizTemplateScores", quizTemplateScoreRouter);
 setupSwagger(app);
 
 //const HOST_NAME = process.env.HOST_NAME;
@@ -73,7 +82,7 @@ app.use(function (err, req, res, next) {
 
   res.status(500).json({
     message: err.message,
-    errorInfor: omit(err, ["stack"]),
+    errorInfor: omit(err, ["stack", "statusCode", "status"]),
   });
 });
 
