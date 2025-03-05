@@ -34,11 +34,9 @@ exports.addProductController = async (req, res, next) => {
     next(error);
   }
 };
-exports.getProductByCateController = async (req, res, next) => {
+exports.getProductByCriteriaController = async (req, res, next) => {
   try {
-    const result = await productService.getProductsByCate(
-      req.query.category_id
-    );
+    const result = await productService.getProductByCriteria(req.query);
     res.status(200).json({
       message: "Get product by category successfully",
       result,

@@ -70,79 +70,127 @@ class ProductService {
       variations,
     };
   }
-  async getProductsByCate(category_id) {
-    const products = await db.Product.find({ category_id });
-    const thumbnail = await db.Image.find({
-      parent_id: { $in: products.map((product) => product._id) },
-    }).select("image_url _id parent_id");
+  async getProductByCriteria(query) {
+    if ("category_id" in query) {
+      const products = await db.Product.find({
+        category_id: query.category_id,
+      });
+      const thumbnail = await db.Image.find({
+        parent_id: { $in: products.map((product) => product._id) },
+      }).select("image_url _id parent_id");
 
-    const productVariations = await db.ProductVariation.find({
-      product_id: { $in: products.map((product) => product._id) },
-    });
+      const productVariations = await db.ProductVariation.find({
+        product_id: { $in: products.map((product) => product._id) },
+      });
 
-    // Nhóm variations theo product_id
-    const productVariationsGroup = _.groupBy(productVariations, "product_id");
+      // Nhóm variations theo product_id
+      const productVariationsGroup = _.groupBy(productVariations, "product_id");
 
-    // Lấy brand name
-    const brandNames = await db.Brand.find({
-      _id: { $in: products.map((product) => product.brand_id) },
-    });
+      // Lấy brand name
+      const brandNames = await db.Brand.find({
+        _id: { $in: products.map((product) => product.brand_id) },
+      });
 
-    let finalProducts = [];
+      let finalProducts = [];
 
-    products.forEach((product) => {
-      const img = thumbnail
-        .filter(
-          (thumb) => thumb.parent_id.toString() === product._id.toString()
-        )
-        .map((thumb) => thumb.image_url);
+      products.forEach((product) => {
+        const img = thumbnail
+          .filter(
+            (thumb) => thumb.parent_id.toString() === product._id.toString()
+          )
+          .map((thumb) => thumb.image_url);
 
-      const brandName = brandNames.find(
-        (brand) => brand._id.toString() === product.brand_id.toString()
-      )?.name;
+        const brandName = brandNames.find(
+          (brand) => brand._id.toString() === product.brand_id.toString()
+        )?.name;
 
-      // Nếu có variations, tạo các sản phẩm riêng biệt
-      const variations = productVariationsGroup[product._id] || [];
-      if (variations.length > 0) {
-        variations.forEach((variation) => {
-          const attrText = Array.from(variation.attributes.entries())
-            .map(([key, value]) => `${key} ${value}`)
-            .join(" ");
+        // Nếu có variations, tạo các sản phẩm riêng biệt
+        const variations = productVariationsGroup[product._id] || [];
+        if (variations.length > 0) {
+          variations.forEach((variation) => {
+            const attrText = Array.from(variation.attributes.entries())
+              .map(([key, value]) => `${key} ${value}`)
+              .join(" ");
+            finalProducts.push({
+              _id: variation._id,
+              product_id: product._id,
+              name: `${product.name} ${attrText}`,
+              category_id: product.category_id,
+              description: product.description,
+              thumbnails: img,
+              instruction: product.instruction,
+              origin: product.origin,
+              total_rating: product.total_rating,
+              brandName: brandName,
+              images: variation.images.length > 0 ? variation.images : img,
+              price: variation.price,
+              quantity: variation.quantity,
+            });
+          });
+        } else {
+          // Trường hợp không có variation
           finalProducts.push({
-            _id: variation._id,
-            product_id: product._id,
-            name: `${product.name} ${attrText}`,
+            _id: product._id,
+            name: product.name,
             category_id: product.category_id,
             description: product.description,
-            thumbnails: img,
             instruction: product.instruction,
             origin: product.origin,
             total_rating: product.total_rating,
             brandName: brandName,
-            images: variation.images.length > 0 ? variation.images : img,
-            price: variation.price,
-            quantity: variation.quantity,
+            images: img,
+            price: null,
+            quantity: null,
           });
-        });
-      } else {
-        // Trường hợp không có variation
-        finalProducts.push({
-          _id: product._id,
-          name: product.name,
-          category_id: product.category_id,
-          description: product.description,
-          instruction: product.instruction,
-          origin: product.origin,
-          total_rating: product.total_rating,
-          brandName: brandName,
-          images: img,
-          price: null,
-          quantity: null,
-        });
-      }
-    });
+        }
+      });
+      return finalProducts;
+    } else if ("variation_id" in query) {
+      const productVariation = await db.ProductVariation.findOne({
+        _id: query.variation_id,
+      });
+      const variations = await db.ProductVariation.find({
+        product_id: productVariation.product_id,
+      });
 
-    return finalProducts;
+      const products = await db.Product.findById({
+        _id: productVariation.product_id,
+      });
+      const thumbnail = await db.Image.find({
+        parent_id: productVariation.product_id,
+      }).select("image_url _id parent_id");
+
+      // Lấy brand name
+      const brandNames = await db.Brand.findOne({
+        _id: products.brand_id,
+      }).select("name");
+
+      let finalProducts = [];
+
+      const img = thumbnail.map((thumb) => thumb.image_url);
+      variations.forEach((variation) => {
+        const attrText = Array.from(variation.attributes.entries())
+          .map(([key, value]) => `${key} ${value}`)
+          .join(" ");
+        finalProducts.push({
+          _id: variation._id,
+          product_id: products._id,
+          category_id: products.category_id,
+          name: `${products.name} ${attrText}`,
+          brandName: brandNames.name,
+          thumbnails: img,
+          attributes: variation.attributes,
+          description: products.description,
+          instruction: products.instruction,
+          origin: products.origin,
+          total_rating: products.total_rating,
+          images: variation.images.length > 0 ? variation.images : img,
+          price: variation.price,
+          quantity: variation.quantity,
+        });
+      });
+      return finalProducts;
+    }
   }
   async updateProduct(userId, payload) {
     const updatedProduct = await db.Product.updateOne(

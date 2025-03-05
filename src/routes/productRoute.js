@@ -10,12 +10,16 @@ const {
   addProductController,
   getProductByCateController,
   updateProductController,
+  getProductByCriteriaController,
+  getProductSimilarValidatorController,
 } = require("../controller/products.controllers");
 const {
   getProductDetailValidator,
   addProductValidator,
   updateProductValidator,
   getProductByCateValidator,
+  getProductByCriteriaValidator,
+  getProductSimilarValidator,
 } = require("../middleware/productMiddleware");
 const {
   accessTokenValidator,
@@ -81,7 +85,11 @@ productRoute.get("/all", getProductsController);
  *         description: Internal server error
  */
 productRoute.get("/:id", getProductDetailValidator, getProductDetailController);
-productRoute.get("/", getProductByCateValidator, getProductByCateController);
+productRoute.get(
+  "/",
+  getProductByCriteriaValidator,
+  getProductByCriteriaController
+);
 
 /**
  * @swagger

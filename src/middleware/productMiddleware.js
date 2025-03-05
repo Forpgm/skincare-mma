@@ -220,11 +220,55 @@ exports.addProductValidator = validate(
     ["body"]
   )
 );
-exports.getProductByCateValidator = validate(
+exports.getProductByCriteriaValidator = validate(
   checkSchema(
     {
-      category_id: categoryIdSchema,
+      category_id: {
+        optional: true,
+        isMongoId: {
+          errorMessage: "Invalid product id",
+        },
+        custom: {
+          options: async (value) => {
+            const product = await db.Category.findById({
+              _id: new ObjectId(String(value)),
+              deletedAt: null,
+              deletedBy: null,
+            });
+            if (!product) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: "Product not found",
+              });
+            }
+            return true;
+          },
+        },
+      },
+      variation_id: {
+        optional: true,
+        isMongoId: {
+          errorMessage: "Invalid product id",
+        },
+        custom: {
+          options: async (value) => {
+            const productVariation = await db.ProductVariation.findById({
+              _id: new ObjectId(String(value)),
+              deletedAt: null,
+              deletedBy: null,
+            });
+            if (!productVariation) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: "Product not found",
+              });
+            }
+            return true;
+          },
+        },
+      },
     },
+
     ["query"]
   )
 );
