@@ -110,6 +110,7 @@ class ProductService {
             .join(" ");
           finalProducts.push({
             _id: variation._id,
+            product_id: product._id,
             name: `${product.name} ${attrText}`,
             category_id: product.category_id,
             description: product.description,
