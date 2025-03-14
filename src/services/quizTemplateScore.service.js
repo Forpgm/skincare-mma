@@ -10,6 +10,13 @@ class QuizTemplateScoreService {
     });
     return result;
   }
+  async getQuizDetailTemplateScores(quiz_id) {
+    const result = await db.QuizTemplateScore.find({ quiz_id }).select(
+      "min_score max_score result quiz_id"
+    );
+
+    return result;
+  }
 }
 const quizTemplateScoreService = new QuizTemplateScoreService();
 module.exports = quizTemplateScoreService;

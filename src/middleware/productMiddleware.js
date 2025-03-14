@@ -15,7 +15,7 @@ const nameSchema = {
     errorMessage: "Product name must be a string",
   },
 };
-const imageSchema = {
+exports.imageSchema = {
   optional: true,
   isArray: {
     errorMessage: PRODUCTS_MESSAGES.IMAGES_MUST_BE_ARRAY,
@@ -168,7 +168,7 @@ exports.addProductValidator = validate(
       description: descriptionSchema,
       instruction: instructionSchema,
       origin: originSchema,
-      images: imageSchema,
+      images: this.imageSchema,
       variations: {
         notEmpty: {
           errorMessage: "Product variations are required",
@@ -316,7 +316,7 @@ exports.updateProductValidator = validate(
         optional: true,
       },
       images: {
-        ...imageSchema,
+        ...this.imageSchema,
         optional: true,
       },
       variations: {

@@ -3,6 +3,7 @@ var quizTemplateScoreRouter = express.Router();
 const { accessTokenValidator } = require("../middleware/users.middleware");
 const {
   addQuizTemplateScoreController,
+  getQuizDetailTemplateScoresController,
 } = require("../controller/quizTemplateScore.controllers");
 const {
   addQuizTemplateScoreValidator,
@@ -14,4 +15,5 @@ quizTemplateScoreRouter.post(
   addQuizTemplateScoreValidator,
   addQuizTemplateScoreController
 );
+quizTemplateScoreRouter.get("/:id", getQuizDetailTemplateScoresController);
 module.exports = quizTemplateScoreRouter;

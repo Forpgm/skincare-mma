@@ -1,8 +1,15 @@
 var express = require("express");
 var quizRouter = express.Router();
 const { accessTokenValidator } = require("../middleware/users.middleware");
-const { addQuizValidator } = require("../middleware/quizMiddelware");
-const { addQuizController } = require("../controller/quizzes.controllers");
+const {
+  addQuizValidator,
+  getQuizDetailValidator,
+} = require("../middleware/quizMiddelware.js");
+const {
+  addQuizController,
+  getAllQuizzesController,
+  getQuizDetailController,
+} = require("../controller/quizzes.controllers.js");
 
 quizRouter.post(
   "/add",
@@ -10,4 +17,7 @@ quizRouter.post(
   addQuizValidator,
   addQuizController
 );
+
+quizRouter.get("/all", getAllQuizzesController);
+quizRouter.get("/:id", getQuizDetailValidator, getQuizDetailController);
 module.exports = quizRouter;

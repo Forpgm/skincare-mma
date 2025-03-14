@@ -20,7 +20,8 @@ const accountSchema = new mongoose.Schema(
     },
     avatar_url: {
       type: String,
-      default: "",
+      default:
+        "https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png",
     },
     username: {
       type: String,

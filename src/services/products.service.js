@@ -149,6 +149,7 @@ class ProductService {
       const productVariation = await db.ProductVariation.findOne({
         _id: query.variation_id,
       });
+
       const variations = await db.ProductVariation.find({
         product_id: productVariation.product_id,
       });
@@ -189,6 +190,14 @@ class ProductService {
           quantity: variation.quantity,
         });
       });
+      finalProducts.sort((a, b) =>
+        a._id.toString() === query.variation_id
+          ? -1
+          : b._id.toString() === query.variation_id
+          ? 1
+          : 0
+      );
+
       return finalProducts;
     }
   }

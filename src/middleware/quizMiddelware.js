@@ -1,5 +1,9 @@
 const { checkSchema } = require("express-validator");
 const { validate } = require("../utils/validator");
+const { imageSchema } = require("./productMiddleware");
+const { ErrorWithStatus } = require("../models/errors");
+const { HTTP_STATUS } = require("../constants/httpStatus");
+const db = require("../models/index");
 
 exports.addQuizValidator = validate(
   checkSchema(
@@ -32,7 +36,30 @@ exports.addQuizValidator = validate(
           errorMessage: "Invalid category",
         },
       },
+      images: imageSchema,
     },
     ["body"]
   )
+);
+exports.getQuizDetailValidator = validate(
+  checkSchema({
+    id: {
+      notEmpty: {
+        errorMessage: "Quiz id is required",
+      },
+      custom: {
+        options: async (value) => {
+          const quiz = await db.Quiz.findById(value);
+          if (!quiz) {
+            throw new ErrorWithStatus({
+              message: "Quiz not found",
+              status: HTTP_STATUS.NOT_FOUND,
+            });
+          }
+          return true;
+        },
+      },
+    },
+  }),
+  ["params"]
 );

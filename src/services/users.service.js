@@ -65,28 +65,28 @@ class UsersService {
     const { email, phone, password, username } = payload;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const account = new db.Account({
+    const account = await db.Account.create({
       email,
       phone,
       password: hashedPassword,
       username,
-      balance: 0,
     });
-
-    const result = await account.save();
+    const user = await db.Account.findOne({ _id: account._id }).select(
+      "email phone username role"
+    );
     const [access_token, refresh_token] =
-      await this.signAccessTokenAndRefreshToken(result._id.toString());
+      await this.signAccessTokenAndRefreshToken(account._id.toString());
 
     const { exp, iat } = await this.decodeRefreshToken(refresh_token);
 
     const refreshToken = new db.RefreshToken({
       token: refresh_token,
-      user_id: new ObjectId(result._id),
+      user_id: new ObjectId(account._id),
       exp,
       iat,
     });
     await refreshToken.save();
-    return [access_token, refresh_token];
+    return [access_token, refresh_token, user];
   }
 
   async login(userId) {
@@ -95,12 +95,15 @@ class UsersService {
     const { exp, iat } = await this.decodeRefreshToken(refresh_token);
     const refreshToken = new db.RefreshToken({
       token: refresh_token,
-      user_id: new ObjectId(userId),
+      user_id: new ObjectId(String(userId)),
       exp,
       iat,
     });
+    const user = await db.Account.findOne({ _id: userId }).select(
+      "email phone username role avatar_url"
+    );
     await refreshToken.save();
-    return [access_token, refresh_token];
+    return [access_token, refresh_token, user];
   }
 
   async refreshToken(refresh_token, user_id, exp, iat) {

@@ -7,13 +7,16 @@ const {
 
 exports.registerController = async (req, res, next) => {
   try {
-    const [access_token, refresh_token] = await usersService.register(req.body);
+    const [access_token, refresh_token, user] = await usersService.register(
+      req.body
+    );
     sendSuccessRegisterMail(req.body.email);
     res.status(200).send({
       message: USERS_MESSAGES.REGISTRATION_SUCCESS,
       result: {
         access_token,
         refresh_token,
+        user,
       },
     });
   } catch (error) {
@@ -23,15 +26,16 @@ exports.registerController = async (req, res, next) => {
 
 exports.loginController = async (req, res, next) => {
   try {
-    const { user } = req;
-    const [access_token, refresh_token] = await usersService.login(
-      user._id.toString()
+    const { user: account } = req;
+    const [access_token, refresh_token, user] = await usersService.login(
+      account._id.toString()
     );
     res.status(200).send({
       message: USERS_MESSAGES.LOGIN_SUCCESS,
       result: {
         access_token,
         refresh_token,
+        user,
       },
     });
   } catch (error) {

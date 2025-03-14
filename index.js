@@ -52,7 +52,7 @@ app.use("/api/brands", brandRoute);
 app.use("/api/products", productRoute);
 app.use("/api/manager", managerRoute);
 app.use("/api/dashboard", dashboardRoute);
-app.use("/api/order", orderRoute);
+app.use("/api/orders", orderRoute);
 app.use("/api/customers", customerRoute);
 app.use("/api/feedback", feedbackRoute);
 app.use("/api/wishList", wishListRoute);

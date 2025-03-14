@@ -13,3 +13,17 @@ exports.addQuizTemplateScoreController = async (req, res) => {
     throw error;
   }
 };
+exports.getQuizDetailTemplateScoresController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await quizTemplateScoreService.getQuizDetailTemplateScores(
+      id
+    );
+    res.status(200).send({
+      message: "Get quiz template scores successfully",
+      result,
+    });
+  } catch (error) {
+    throw error;
+  }
+};
