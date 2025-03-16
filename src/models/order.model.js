@@ -2,32 +2,49 @@ const mongoose = require("mongoose");
 
 const OrderSchema = mongoose.Schema(
   {
-    account: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Account",
       required: true,
     },
+    total_quantity: {
+      type: Number,
+      required: true,
+    },
+    estimate_price: {
+      type: Number,
+      required: true,
+    },
+    ghn_order_code: {
+      type: String,
+      required: false,
+    },
+    discount: {
+      type: Number,
+      required: false,
+    },
+    end_price: {
+      type: Number,
+      required: true,
+    },
+    shipping_fee: {
+      type: Number,
+      required: false,
+    },
+    shipping_address: {
+      type: String,
+      required: false,
+    },
+    receiver_name: {
+      type: String,
+      required: false,
+    },
+    expected_delivery_date: {
+      type: Date,
+      required: false,
+    },
     status: {
       type: String,
-      enum: ["Pending", "Paid", "Canceled"],
-      default: "Pending",
-    },
-    items: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-        },
-      },
-    ],
-    totalAmount: {
-      type: Number,
       required: true,
     },
   },

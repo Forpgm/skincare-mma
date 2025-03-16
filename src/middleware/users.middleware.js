@@ -398,3 +398,91 @@ exports.roleValidator = validate(
     ["headers"]
   )
 );
+exports.updateMeValidator = validate(
+  checkSchema(
+    {
+      username: {
+        optional: true,
+        notEmpty: undefined,
+        isString: {
+          errorMessage: USERS_MESSAGES.USERNAME_MUST_BE_A_STRING,
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 100,
+          },
+          errorMessage: "Username length must be from 1 to 100",
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const user = await db.Account.findOne({
+              username: value,
+              _id: {
+                $ne: new ObjectId(String(req.decoded_authorization.userId)),
+              },
+            });
+            if (user) {
+              throw new Error("Username đã tồn tại");
+            }
+            return true;
+          },
+        },
+      },
+      phone: {
+        optional: true,
+        notEmpty: undefined,
+        isMobilePhone: {
+          options: ["vi-VN"],
+          errorMessage: "Số điện thoại không hợp lệ",
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const user = await db.Account.findOne({
+              phone: value,
+              deleted_at: null,
+              _id: {
+                $ne: new ObjectId(String(req.decoded_authorization.userId)),
+              },
+            });
+            if (user) {
+              throw new Error("Số điện thoại đã tồn tại");
+            }
+            return true;
+          },
+        },
+      },
+      birthday: {
+        optional: true,
+        notEmpty: undefined,
+        custom: {
+          options: (value) => {
+            if (!value || isNaN(Date.parse(value))) {
+              throw new Error("Ngày sinh không hợp lệ");
+            }
+            return true;
+          },
+        },
+      },
+      gender: {
+        optional: true,
+        notEmpty: undefined,
+        isString: {
+          errorMessage: "Giới tính phải là chuỗi",
+        },
+        isIn: {
+          options: [["Nam", "Nữ", "Khác"]],
+          errorMessage: "Giới tính chỉ có thể là nam, nữ hoặc khác",
+        },
+      },
+      avatar_url: {
+        optional: true,
+        isURL: {
+          errorMessage: "Avatar không hợp lệ",
+        },
+      },
+    },
+    ["body"]
+  )
+);

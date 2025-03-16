@@ -7,19 +7,19 @@ const {
   forgotPasswordController,
   verifyforgotPasswordController,
   resetPasswordController,
+  getMeController,
+  updateMeController,
 } = require("../controller/users.controllers");
 const {
   registerValidator,
   loginValidator,
-
   refreshTokenValidator,
   forgotPasswordValidator,
   verifyForgotPasswordTokenValidator,
   resetPasswordValidator,
   accessTokenValidator,
+  updateMeValidator,
 } = require("../middleware/users.middleware");
-const { addWishListController } = require("../controller/wishlist.controllers");
-const { addWishListValidator } = require("../middleware/wishList.middleware");
 
 const userRoute = express.Router();
 userRoute.use(bodyParser.json());
@@ -195,5 +195,11 @@ userRoute.post(
 
 // get new accessToken & refreshToken
 userRoute.post("/refresh-token", refreshTokenValidator, refreshTokenController);
-
+userRoute.get("/me", accessTokenValidator, getMeController);
+userRoute.patch(
+  "/me",
+  accessTokenValidator,
+  updateMeValidator,
+  updateMeController
+);
 module.exports = userRoute;

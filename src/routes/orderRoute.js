@@ -17,6 +17,11 @@ const handlebars = require("handlebars");
 const moment = require("moment");
 const axios = require("axios");
 const CryptoJS = require("crypto-js");
+const { accessTokenValidator } = require("../middleware/users.middleware");
+const { createOrderValidator } = require("../middleware/orders.middleware");
+const { createOrderController } = require("../controller/orders.controllers");
+const { ZalopayConfig } = require("../config/zalopay");
+const { log } = require("console");
 
 const orderRoute = express.Router();
 
@@ -264,13 +269,6 @@ orderRoute.post(
   }
 );
 
-const config = {
-  app_id: "2553",
-  key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
-  key2: "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz",
-  endpoint: "https://sb-openapi.zalopay.vn/v2/create",
-};
-
 /**
  * @swagger
  * /api/order/add-to-cart/zalopay:
@@ -321,124 +319,110 @@ const config = {
  *         description: Internal server error
  */
 orderRoute.post(
-  "/add-to-cart/zalopay",
-  authMiddleware,
-  roleMiddleware(["customer"]),
-  async (req, res) => {
-    const { account, products } = req.body;
+  "/zalopay/create-payment",
+  accessTokenValidator,
+  createOrderValidator,
+  createOrderController
+  // async (req, res) => {
+  //   const { products } = req.body;
 
-    if (!account || !products || products.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "An order must contain at least one product." });
-    }
+  //   const newOrder = new db.Order({
+  //     account,
+  //     items: products,
+  //     totalAmount,
+  //     status: "Paid",
+  //   });
 
-    const accountDetails = await db.Account.findById(account)
-      .select("balance email")
-      .exec();
-    if (!accountDetails) {
-      return res.status(404).json({ message: "Account not found." });
-    }
+  //   await newOrder.save();
+  //   const embed_data = {
+  //     redirecturl: "https://phongthuytaman.com",
+  //   };
 
-    let totalAmount = 0;
-    const updatedProducts = [];
+  //   const items = [];
+  //   const transID = Math.floor(Math.random() * 1000000);
 
-    for (const item of products) {
-      const product = await db.Product.findById(item.product);
-      if (!product) {
-        return res
-          .status(404)
-          .json({ message: `Product with ID ${item.product} not found.` });
-      }
+  //   const order = {
+  //     app_id: config.app_id,
+  //     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
+  //     app_user: "user123",
+  //     app_time: Date.now(),
+  //     item: JSON.stringify(items),
+  //     embed_data: JSON.stringify(embed_data),
+  //     amount: totalAmount,
+  //     callback_url: "https://b074-1-53-37-194.ngrok-free.app/callback",
+  //     description: `Lazada - Payment for the order #${transID}`,
+  //     bank_code: "",
+  //   };
 
-      if (product.quantity < item.quantity) {
-        return res.status(400).json({
-          message: `Not enough stock for ${product.name}. Available: ${product.quantity}, Requested: ${item.quantity}`,
-        });
-      }
+  //   const data =
+  //     config.app_id +
+  //     "|" +
+  //     order.app_trans_id +
+  //     "|" +
+  //     order.app_user +
+  //     "|" +
+  //     order.amount +
+  //     "|" +
+  //     order.app_time +
+  //     "|" +
+  //     order.embed_data +
+  //     "|" +
+  //     order.item;
+  //   order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
 
-      totalAmount += item.quantity * product.price;
-      product.quantity -= item.quantity;
-      updatedProducts.push(product);
-    }
+  //   try {
+  //     const result = await axios.post(config.endpoint, null, { params: order });
 
-    if (accountDetails.balance < totalAmount) {
-      return res.status(400).json({
-        message: "Insufficient balance. Please recharge your account.",
-      });
-    }
-
-    accountDetails.balance -= totalAmount;
-    await accountDetails.save();
-
-    for (const product of updatedProducts) {
-      await product.save();
-    }
-
-    const adminAccount = await db.Account.findOne({ role: "admin" })
-      .select("balance")
-      .exec();
-    if (!adminAccount) {
-      return res.status(500).json({ message: "Admin account not found." });
-    }
-
-    adminAccount.balance += totalAmount;
-    await adminAccount.save();
-
-    const newOrder = new db.Order({
-      account,
-      items: products,
-      totalAmount,
-      status: "Paid",
-    });
-
-    await newOrder.save();
-    const embed_data = {
-      redirecturl: "https://phongthuytaman.com",
-    };
-
-    const items = [];
-    const transID = Math.floor(Math.random() * 1000000);
-
-    const order = {
-      app_id: config.app_id,
-      app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
-      app_user: "user123",
-      app_time: Date.now(),
-      item: JSON.stringify(items),
-      embed_data: JSON.stringify(embed_data),
-      amount: totalAmount,
-      callback_url: "https://b074-1-53-37-194.ngrok-free.app/callback",
-      description: `Lazada - Payment for the order #${transID}`,
-      bank_code: "",
-    };
-
-    const data =
-      config.app_id +
-      "|" +
-      order.app_trans_id +
-      "|" +
-      order.app_user +
-      "|" +
-      order.amount +
-      "|" +
-      order.app_time +
-      "|" +
-      order.embed_data +
-      "|" +
-      order.item;
-    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-
-    try {
-      const result = await axios.post(config.endpoint, null, { params: order });
-
-      return res.status(200).json(result.data);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Server error.", error: error.message });
-    }
-  }
+  //     return res.status(200).json(result.data);
+  //   } catch (error) {
+  //     console.log(error);
+  //     res.status(500).json({ message: "Server error.", error: error.message });
+  //   }
+  // }
 );
+orderRoute.post("/callback", async (req, res) => {
+  let result = {};
+  try {
+    let dataStr = req.body.data; // Lấy data từ request
+    let reqMac = req.body.mac; // Lấy MAC từ request
+    console.log("Received dataStr =", dataStr);
+
+    // Tính toán MAC để xác thực dữ liệu từ ZaloPay
+    let mac = CryptoJS.HmacSHA256(dataStr, ZalopayConfig.key2).toString();
+    // console.log("Calculated mac =", mac);
+
+    // Kiểm tra MAC hợp lệ
+    if (reqMac !== mac) {
+      result.return_code = -1;
+      result.return_message = "mac not equal";
+    } else {
+      console.log("Valid MAC");
+
+      // update status của order trong DB
+      let dataJson =
+        typeof dataStr === "string" ? JSON.parse(dataStr) : dataStr;
+
+      let orderId = dataJson.app_trans_id.split("_")[1]; // Lấy order_id
+
+      console.log(" order_id =", orderId);
+
+      await db.Order.findOneAndUpdate(
+        { _id: orderId },
+        { $set: { status: "success" } },
+        { new: true }
+      );
+
+      result.return_code = 1;
+      result.return_message = "success";
+    }
+  } catch (error) {
+    console.error("Error processing callback:", error.message);
+    result.return_code = 0; // ZaloPay sẽ callback lại nếu lỗi
+    result.return_message = error.message;
+  }
+
+  res.json(result);
+});
 
 /**
  * @swagger

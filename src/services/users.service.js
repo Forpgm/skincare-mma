@@ -72,7 +72,7 @@ class UsersService {
       username,
     });
     const user = await db.Account.findOne({ _id: account._id }).select(
-      "email phone username role"
+      "email phone username role avatar_url birthday gender"
     );
     const [access_token, refresh_token] =
       await this.signAccessTokenAndRefreshToken(account._id.toString());
@@ -100,7 +100,7 @@ class UsersService {
       iat,
     });
     const user = await db.Account.findOne({ _id: userId }).select(
-      "email phone username role avatar_url"
+      "email phone username role avatar_url birthday gender"
     );
     await refreshToken.save();
     return [access_token, refresh_token, user];
@@ -135,6 +135,21 @@ class UsersService {
       { _id: new ObjectId(String(user_id)) },
       { password: hashedPassword, forgot_password_token: "" }
     );
+  }
+
+  async getMe(userId) {
+    return db.Account.findOne({ _id: userId }).select(
+      "email phone username role avatar_url gender birthday"
+    );
+  }
+
+  async updateMe(userId, payload) {
+    const { username, phone, birthday, gender, avatar_url } = payload;
+    return db.Account.findOneAndUpdate(
+      { _id: userId },
+      { username, phone, birthday, gender, avatar_url },
+      { new: true }
+    ).select("email phone username role avatar_url gender birthday");
   }
 }
 const usersService = new UsersService();

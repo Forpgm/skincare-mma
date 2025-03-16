@@ -30,6 +30,14 @@ const accountSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    gender: {
+      type: String,
+      default: null,
+    },
+    birthday: {
+      type: Date,
+      default: null,
+    },
     role: {
       type: String,
       default: ROLE.CUSTOMER,
