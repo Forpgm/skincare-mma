@@ -25,97 +25,7 @@ const { log } = require("console");
 
 const orderRoute = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Orders
- *   description: API for orders
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Order:
- *       type: object
- *       properties:
- *         account:
- *           type: string
- *           description: The ID of the account
- *         status:
- *           type: string
- *           enum: ["Pending", "Paid"]
- *           description: The status of the order
- *         items:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               product:
- *                 type: string
- *                 description: The ID of the product
- *               quantity:
- *                 type: number
- *                 description: The quantity of the product
- *         totalAmount:
- *           type: number
- *           description: The total amount of the order
- *       required:
- *         - account
- *         - status
- *         - items
- *         - totalAmount
- */
-
-/**
- * @swagger
- * /api/order/add-to-cart:
- *   post:
- *     tags:
- *       - Orders
- *     summary: Add items to the cart and create a VNPAY payment URL
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               account:
- *                 type: string
- *                 description: The account ID
- *                 example: "64f8a6d123abc4567e891011"
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     product:
- *                       type: string
- *                       description: The product ID
- *                       example: "64f8a6d123abc4567e891011"
- *                     quantity:
- *                       type: number
- *                       description: The quantity of the product
- *                       example: 2
- *     responses:
- *       201:
- *         description: VNPAY payment URL created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 vnpayResponse:
- *                   type: object
- *                   description: The VNPAY payment URL response
- *       400:
- *         description: Bad request
- *       404:
- *         description: Product not found
- *       500:
- *         description: Internal server error
- */
+// API thêm sản phẩm vào giỏ hàng và tạo URL thanh toán VNPay
 orderRoute.post(
   "/add-to-cart",
   authMiddleware,
@@ -269,140 +179,34 @@ orderRoute.post(
   }
 );
 
-/**
- * @swagger
- * /api/order/add-to-cart/zalopay:
- *   post:
- *     tags:
- *       - Orders
- *     summary: Add items to the cart and create a ZaloPay payment URL
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               account:
- *                 type: string
- *                 description: The account ID
- *                 example: "64f8a6d123abc4567e891011"
- *               products:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     product:
- *                       type: string
- *                       description: The product ID
- *                       example: "64f8a6d123abc4567e891011"
- *                     quantity:
- *                       type: number
- *                       description: The quantity of the product
- *                       example: 2
- *     responses:
- *       200:
- *         description: ZaloPay payment URL created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 zalopayResponse:
- *                   type: object
- *                   description: The ZaloPay payment URL response
- *       400:
- *         description: Bad request
- *       404:
- *         description: Product not found
- *       500:
- *         description: Internal server error
- */
+// API tạo đơn hàng và thanh toán qua ZaloPay
 orderRoute.post(
   "/zalopay/create-payment",
   accessTokenValidator,
   createOrderValidator,
   createOrderController
-  // async (req, res) => {
-  //   const { products } = req.body;
-
-  //   const newOrder = new db.Order({
-  //     account,
-  //     items: products,
-  //     totalAmount,
-  //     status: "Paid",
-  //   });
-
-  //   await newOrder.save();
-  //   const embed_data = {
-  //     redirecturl: "https://phongthuytaman.com",
-  //   };
-
-  //   const items = [];
-  //   const transID = Math.floor(Math.random() * 1000000);
-
-  //   const order = {
-  //     app_id: config.app_id,
-  //     app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
-  //     app_user: "user123",
-  //     app_time: Date.now(),
-  //     item: JSON.stringify(items),
-  //     embed_data: JSON.stringify(embed_data),
-  //     amount: totalAmount,
-  //     callback_url: "https://b074-1-53-37-194.ngrok-free.app/callback",
-  //     description: `Lazada - Payment for the order #${transID}`,
-  //     bank_code: "",
-  //   };
-
-  //   const data =
-  //     config.app_id +
-  //     "|" +
-  //     order.app_trans_id +
-  //     "|" +
-  //     order.app_user +
-  //     "|" +
-  //     order.amount +
-  //     "|" +
-  //     order.app_time +
-  //     "|" +
-  //     order.embed_data +
-  //     "|" +
-  //     order.item;
-  //   order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
-
-  //   try {
-  //     const result = await axios.post(config.endpoint, null, { params: order });
-
-  //     return res.status(200).json(result.data);
-  //   } catch (error) {
-  //     console.log(error);
-  //     res.status(500).json({ message: "Server error.", error: error.message });
-  //   }
-  // }
 );
+
+// Callback từ ZaloPay
 orderRoute.post("/callback", async (req, res) => {
   let result = {};
   try {
-    let dataStr = req.body.data; // Lấy data từ request
-    let reqMac = req.body.mac; // Lấy MAC từ request
+    let dataStr = req.body.data;
+    let reqMac = req.body.mac;
     console.log("Received dataStr =", dataStr);
 
-    // Tính toán MAC để xác thực dữ liệu từ ZaloPay
     let mac = CryptoJS.HmacSHA256(dataStr, ZalopayConfig.key2).toString();
-    // console.log("Calculated mac =", mac);
 
-    // Kiểm tra MAC hợp lệ
     if (reqMac !== mac) {
       result.return_code = -1;
       result.return_message = "mac not equal";
     } else {
       console.log("Valid MAC");
 
-      // update status của order trong DB
       let dataJson =
         typeof dataStr === "string" ? JSON.parse(dataStr) : dataStr;
 
-      let orderId = dataJson.app_trans_id.split("_")[1]; // Lấy order_id
+      let orderId = dataJson.app_trans_id.split("_")[1];
 
       console.log(" order_id =", orderId);
 
@@ -417,44 +221,14 @@ orderRoute.post("/callback", async (req, res) => {
     }
   } catch (error) {
     console.error("Error processing callback:", error.message);
-    result.return_code = 0; // ZaloPay sẽ callback lại nếu lỗi
+    result.return_code = 0;
     result.return_message = error.message;
   }
 
   res.json(result);
 });
 
-/**
- * @swagger
- * /api/order/account/{id}:
- *   get:
- *     tags:
- *       - Orders
- *     summary: Get orders by account ID
- *     description: Retrieve all orders for a specific account by account ID.
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the account
- *     responses:
- *       200:
- *         description: Successful response
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Order'
- *       400:
- *         description: Bad request
- *       404:
- *         description: Account not found
- *       500:
- *         description: Internal server error
- */
+// Lấy đơn hàng theo account ID
 orderRoute.get(
   "/account/:id",
   authMiddleware,
@@ -469,46 +243,7 @@ orderRoute.get(
   }
 );
 
-/**
- * @swagger
- * /api/order/add-balance:
- *   patch:
- *     tags:
- *       - Orders
- *     summary: Add balance to an account
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               account:
- *                 type: string
- *                 description: The account ID
- *                 example: "64f8a6d123abc4567e891011"
- *               amount:
- *                 type: number
- *                 description: The amount to add to the balance
- *                 example: 100
- *     responses:
- *       200:
- *         description: Balance added successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Balance added successfully."
- *       400:
- *         description: Invalid request
- *       404:
- *         description: Account not found
- *       500:
- *         description: Internal server error
- */
+// Nạp tiền vào tài khoản
 orderRoute.patch("/add-balance", async (req, res) => {
   try {
     const { account, amount } = req.body;
@@ -533,40 +268,7 @@ orderRoute.patch("/add-balance", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/order/cancel-order/{orderId}:
- *   post:
- *     tags:
- *       - Orders
- *     summary: Cancel an order by ID
- *     description: Cancel an order and refund 50% of the total amount to the customer's account.
- *     parameters:
- *       - in: path
- *         name: orderId
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the order to be canceled
- *     responses:
- *       200:
- *         description: Order canceled and 50% refund issued
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Order has been canceled and 50% refund issued. Product quantities have been updated in the inventory."
- *                 refundAmount:
- *                   type: number
- *                   description: The amount refunded to the customer's account
- *       404:
- *         description: Order not found
- *       500:
- *         description: Internal server error
- */
+// Hủy đơn hàng
 orderRoute.post("/cancel-order/:orderId", authMiddleware, async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -649,5 +351,101 @@ orderRoute.post("/cancel-order/:orderId", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
   }
 });
+
+// API mới: Lấy trạng thái của một đơn hàng theo orderId
+orderRoute.get(
+  "/status/:orderId",
+  async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      console.log("Fetching order with ID:", orderId);
+
+      const order = await db.Order.findById(orderId)
+        .populate("user_id", "email")
+        .lean();
+
+      if (!order) {
+        console.log("Order not found for ID:", orderId);
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      console.log("Order found:", order);
+      const orderDetails = await db.OrderDetail.find({ order_id: order._id })
+        .populate("product_id", "name price")
+        .populate("variation_id", "name");
+
+      const orderWithDetails = { ...order, details: orderDetails };
+
+      let feedbackStatus = null;
+      if (order.status === "SUCCESS") {
+        const updatedAt = new Date(order.updatedAt);
+        const now = new Date();
+        const daysSinceSuccess = Math.floor(
+          (now - updatedAt) / (1000 * 60 * 60 * 24)
+        );
+
+        if (order.feedbackAt) {
+          feedbackStatus = "FEEDBACK_SUBMITTED";
+        } else if (daysSinceSuccess <= 7) {
+          feedbackStatus = "NEED_FEEDBACK";
+        } else {
+          feedbackStatus = "NO_FEEDBACK";
+        }
+      }
+
+      res.status(200).json({
+        order: orderWithDetails,
+        feedbackStatus: feedbackStatus,
+      });
+    } catch (error) {
+      console.error("Error fetching order:", error.message);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
+
+// API gửi feedback (giữ nguyên)
+orderRoute.post(
+  "/feedback/:orderId",
+  async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      const { feedback } = req.body;
+
+      if (!feedback) {
+        return res.status(400).json({ message: "Feedback content is required" });
+      }
+
+      const order = await db.Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      if (order.status !== "SUCCESS") {
+        return res.status(400).json({ message: "Order must be successful to submit feedback" });
+      }
+
+      const updatedAt = new Date(order.updatedAt);
+      const now = new Date();
+      const daysSinceSuccess = Math.floor((now - updatedAt) / (1000 * 60 * 60 * 24));
+
+      if (order.feedback) {
+        return res.status(400).json({ message: "Feedback already submitted" });
+      }
+
+      if (daysSinceSuccess > 7) {
+        return res.status(400).json({ message: "Feedback period has expired (7 days)" });
+      }
+
+      order.feedback = feedback;
+      order.feedbackAt = now;
+      await order.save();
+
+      res.status(200).json({ message: "Feedback submitted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
 
 module.exports = orderRoute;
