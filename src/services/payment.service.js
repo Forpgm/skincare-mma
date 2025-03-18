@@ -24,7 +24,7 @@ class PaymentService {
       amount: order.end_price,
       description: `Thanh toán đơn hàng #${order._id}`,
       bank_code: "zalopayapp",
-      callback_url: `https://8e61-2402-800-62a9-8760-f01d-c213-ff9f-b101.ngrok-free.app/api/payment/callback`,
+      callback_url: `https://skincare-be-mma.onrender.com/api/payment/callback`,
       redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
       embed_data: JSON.stringify(embed_data),
       item: JSON.stringify(items),
