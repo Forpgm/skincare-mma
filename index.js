@@ -28,6 +28,7 @@ const quizQuestionRoute = require("./src/routes/quizQuestionRoute");
 const quizAnswerRoute = require("./src/routes/quizAnswerRoute");
 const quizTemplateScoreRouter = require("./src/routes/quizTemplateScoreRoute");
 const searchRouter = require("./src/routes/searchRoute");
+const { payRouter } = require("./src/routes/paymentRoute");
 
 var app = express();
 app.use(cors());
@@ -54,6 +55,7 @@ app.use("/api/products", productRoute);
 app.use("/api/manager", managerRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/orders", orderRoute);
+app.use("/api/payment", payRouter);
 app.use("/api/customers", customerRoute);
 app.use("/api/feedback", feedbackRoute);
 app.use("/api/wishList", wishListRoute);

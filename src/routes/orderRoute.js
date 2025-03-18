@@ -21,7 +21,6 @@ const { accessTokenValidator } = require("../middleware/users.middleware");
 const { createOrderValidator } = require("../middleware/orders.middleware");
 const { createOrderController } = require("../controller/orders.controllers");
 const { ZalopayConfig } = require("../config/zalopay");
-const { log } = require("console");
 
 const orderRoute = express.Router();
 
@@ -380,49 +379,6 @@ orderRoute.post(
   //   }
   // }
 );
-orderRoute.post("/callback", async (req, res) => {
-  let result = {};
-  try {
-    let dataStr = req.body.data; // Lấy data từ request
-    let reqMac = req.body.mac; // Lấy MAC từ request
-    console.log("Received dataStr =", dataStr);
-
-    // Tính toán MAC để xác thực dữ liệu từ ZaloPay
-    let mac = CryptoJS.HmacSHA256(dataStr, ZalopayConfig.key2).toString();
-    // console.log("Calculated mac =", mac);
-
-    // Kiểm tra MAC hợp lệ
-    if (reqMac !== mac) {
-      result.return_code = -1;
-      result.return_message = "mac not equal";
-    } else {
-      console.log("Valid MAC");
-
-      // update status của order trong DB
-      let dataJson =
-        typeof dataStr === "string" ? JSON.parse(dataStr) : dataStr;
-
-      let orderId = dataJson.app_trans_id.split("_")[1]; // Lấy order_id
-
-      console.log(" order_id =", orderId);
-
-      await db.Order.findOneAndUpdate(
-        { _id: orderId },
-        { $set: { status: "success" } },
-        { new: true }
-      );
-
-      result.return_code = 1;
-      result.return_message = "success";
-    }
-  } catch (error) {
-    console.error("Error processing callback:", error.message);
-    result.return_code = 0; // ZaloPay sẽ callback lại nếu lỗi
-    result.return_message = error.message;
-  }
-
-  res.json(result);
-});
 
 /**
  * @swagger
