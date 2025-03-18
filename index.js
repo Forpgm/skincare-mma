@@ -29,7 +29,7 @@ const quizAnswerRoute = require("./src/routes/quizAnswerRoute");
 const quizTemplateScoreRouter = require("./src/routes/quizTemplateScoreRoute");
 const searchRouter = require("./src/routes/searchRoute");
 const voucherRoute = require("./src/routes/voucherRoute");
-
+const ghnRoutes = require("./src/routes/ghnRoutes");
 
 var app = express();
 app.use(cors());
@@ -65,6 +65,7 @@ app.use("/api/quizAnswers", quizAnswerRoute);
 app.use("/api/quizTemplateScores", quizTemplateScoreRouter);
 app.use("/api/search", searchRouter);
 app.use("/api/vouchers", voucherRoute);
+app.use("/api/ghn", ghnRoutes);
 setupSwagger(app);
 
 //const HOST_NAME = process.env.HOST_NAME;

@@ -1,8 +1,8 @@
 const { checkSchema } = require("express-validator");
 const db = require("../models/index");
 const { validate } = require("../utils/validator");
-const { ObjectId } = require("mongodb");
 const { HTTP_STATUS } = require("../constants/httpStatus");
+const { ErrorWithStatus } = require("../models/errors");
 
 exports.applyVoucherValidator = validate(
   checkSchema(
@@ -20,11 +20,12 @@ exports.applyVoucherValidator = validate(
               code: value,
               isActive: true,
               expiryDate: { $gte: new Date() },
+              quantity: { $gt: 0 },
             });
             if (!voucher) {
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.NOT_FOUND,
-                message: "Voucher not found or expired",
+                message: "Voucher not found, expired, or out of stock",
               });
             }
             return true;
@@ -73,7 +74,10 @@ exports.createVoucherValidator = validate(
         custom: {
           options: (value) => {
             if (value < 0 || value > 100) {
-              throw new Error("Discount must be between 0 and 100");
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: "Discount must be between 0 and 100",
+              });
             }
             return true;
           },
@@ -85,7 +89,10 @@ exports.createVoucherValidator = validate(
         custom: {
           options: (value) => {
             if (new Date(value) <= new Date()) {
-              throw new Error("Expiry date must be in the future");
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: "Expiry date must be in the future",
+              });
             }
             return true;
           },
@@ -97,7 +104,25 @@ exports.createVoucherValidator = validate(
         custom: {
           options: (value) => {
             if (value < 0) {
-              throw new Error("Minimum order value cannot be negative");
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: "Minimum order value cannot be negative",
+              });
+            }
+            return true;
+          },
+        },
+      },
+      quantity: {
+        notEmpty: { errorMessage: "Quantity is required" },
+        isNumeric: { errorMessage: "Quantity must be a number" },
+        custom: {
+          options: (value) => {
+            if (value < 0) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: "Quantity cannot be negative",
+              });
             }
             return true;
           },
