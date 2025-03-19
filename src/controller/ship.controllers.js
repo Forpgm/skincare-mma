@@ -10,16 +10,24 @@ exports.getProvincesController = async (req, res, next) => {
     next(error);
   }
 };
-exports.getDistrictsController = async (req, res) => {
-  const provinceId = req.body.province_id;
-  const districts = await shipServices.getDistricts(provinceId);
-  return res.json(districts);
+exports.getDistrictsController = async (req, res, next) => {
+  try {
+    const provinceId = req.body.province_id;
+    const districts = await shipServices.getDistricts(provinceId);
+    return res.json(districts);
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.getWardsController = async (req, res, Request) => {
-  const districtId = req.body.district_id;
-  const wards = await shipServices.getWards(districtId);
-  return res.json(wards);
+exports.getWardsController = async (req, res, next) => {
+  try {
+    const districtId = req.body.district_id;
+    const wards = await shipServices.getWards(districtId);
+    return res.json(wards);
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.getPackageServicesController = async (req, res, next) => {

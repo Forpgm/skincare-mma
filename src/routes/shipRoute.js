@@ -13,8 +13,8 @@ const {
 var shipRouter = express.Router();
 
 shipRouter.get("/provinces", getProvincesController);
-shipRouter.get("/districts", getDistrictsController);
-shipRouter.get("/wards", getWardsController);
+shipRouter.post("/districts", getDistrictsController);
+shipRouter.post("/wards", getWardsController);
 shipRouter.get("/package-services", getPackageServicesController);
 // shipRouter.post("/fee", getFeeController);
 // shipRouter.post("/create-order", createOrderController);
