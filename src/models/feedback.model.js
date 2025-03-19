@@ -20,6 +20,12 @@ const feedbackSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    rating_number: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5, // Giới hạn rating từ 1-5 (tùy chọn)
+    },
     status: {
       type: String,
       default: "true",

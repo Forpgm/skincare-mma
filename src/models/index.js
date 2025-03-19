@@ -17,6 +17,11 @@ const QuizAnswer = require("./quizAnswer.model");
 const QuizTemplateScore = require("./quizTemplateScore.model");
 const QuizResult = require("./quizResult.model");
 const OrderDetail = require("./orderDetail.model");
+
+const Voucher = require("./voucher.model");
+
+const Address = require("./address.model");
+
 const db = {};
 
 db.Account = Account;
@@ -37,6 +42,9 @@ db.QuizTemplateScore = QuizTemplateScore;
 db.QuizResult = QuizResult;
 db.Order = Order;
 db.OrderDetail = OrderDetail;
+
+db.Voucher = Voucher;
+db.Address = Address;
 
 db.connectDb = async () => {
   try {
