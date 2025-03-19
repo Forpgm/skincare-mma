@@ -28,9 +28,14 @@ const quizQuestionRoute = require("./src/routes/quizQuestionRoute");
 const quizAnswerRoute = require("./src/routes/quizAnswerRoute");
 const quizTemplateScoreRouter = require("./src/routes/quizTemplateScoreRoute");
 const searchRouter = require("./src/routes/searchRoute");
+
+const voucherRoute = require("./src/routes/voucherRoute");
+const ghnRoutes = require("./src/routes/ghnRoutes");
+
 const { payRouter } = require("./src/routes/paymentRoute");
 const shipRouter = require("./src/routes/shipRoute");
 const { addressRouter } = require("./src/routes/addressRoute");
+
 
 var app = express();
 app.use(cors());
@@ -67,7 +72,12 @@ app.use("/api/quizQuestions", quizQuestionRoute);
 app.use("/api/quizAnswers", quizAnswerRoute);
 app.use("/api/quizTemplateScores", quizTemplateScoreRouter);
 app.use("/api/search", searchRouter);
+
+app.use("/api/vouchers", voucherRoute);
+app.use("/api/ghn", ghnRoutes);
+
 app.use("/api/address", addressRouter);
+
 setupSwagger(app);
 
 //const HOST_NAME = process.env.HOST_NAME;

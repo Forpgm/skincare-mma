@@ -45,12 +45,20 @@ const OrderSchema = mongoose.Schema(
     },
     status: {
       type: String,
+      enum: ["PENDING", "SHIPPING", "SUCCESS", "CANCELED"],
       required: true,
+    },
+    feedback: {
+      type: String,
+      default: null,
+    },
+    feedbackAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
 );
 
 const Order = mongoose.model("Order", OrderSchema);
-
 module.exports = Order;
