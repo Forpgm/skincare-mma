@@ -15,6 +15,8 @@ class PaymentService {
     const transID = `${moment().format("YYMMDD")}_${order._id}`;
     const embed_data = {
       redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
+      transID: transID,
+      orderID: order._id,
     };
     const data = {
       app_id: ZalopayConfig.app_id,
@@ -25,7 +27,9 @@ class PaymentService {
       description: `Thanh toán đơn hàng #${order._id}`,
       bank_code: "zalopayapp",
       callback_url: `https://skincare-be-mma.onrender.com/api/payment/callback`,
-      redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
+      redirecturl: `https://skincare-be-mma.onrender.com/api/payment/redirect?appurl=${encodeURIComponent(
+        `com.anonymous.myapp://payment?transID=${transID}&orderID=${order._id}`,
+      )}`,
       embed_data: JSON.stringify(embed_data),
       item: JSON.stringify(items),
     };

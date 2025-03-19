@@ -69,7 +69,7 @@ app.use("/api/search", searchRouter);
 setupSwagger(app);
 
 //const HOST_NAME = process.env.HOST_NAME;
-const HOST_NAME = "0.0.0.0";
+const HOST_NAME = "127.0.0.1";
 const PORT = process.env.PORT;
 
 app.listen(PORT, HOST_NAME, () => {
