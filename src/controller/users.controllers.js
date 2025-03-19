@@ -120,3 +120,14 @@ exports.updateMeController = async (req, res, next) => {
     next(error);
   }
 };
+exports.logoutController = async (req, res, next) => {
+  try {
+    const refresh_token = req.body.refresh_token;
+    await usersService.logout(refresh_token);
+    res.status(200).send({
+      message: "Logout successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

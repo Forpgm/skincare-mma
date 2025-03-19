@@ -79,3 +79,14 @@ exports.createOrderValidator = validate(
     ["body"]
   )
 );
+exports.checkCartValidMiddleware = async (req, res, next) => {
+  const cart_list = req.body.cart_list;
+  // kiểm tra xem cart_list gữi lên có phải dạng mảng không
+  if (!Array.isArray(cart_list)) {
+    throw new ErrorWithStatus({
+      message: "Cart list must be an array",
+      status: HTTP_STATUS.UNPROCESSABLE_ENTITY,
+    });
+  }
+  next();
+};

@@ -184,11 +184,13 @@ exports.accessTokenValidator = validate(
                 status: HTTP_STATUS.UNAUTHORIZED,
               });
             }
+
             try {
               const decoded_authorization = await verifyToken({
                 token: access_token,
                 secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN,
               });
+
               req.decoded_authorization = decoded_authorization;
             } catch (error) {
               throw new ErrorWithStatus({
@@ -232,17 +234,18 @@ exports.refreshTokenValidator = validate(
               }
               req.decoded_refresh_token = decoded_refresh_token;
             } catch (error) {
-              // if (error instanceof JsonWebTokenError) {
-              //   throw new ErrorWithStatus({
-              //     message: USERS_MESSAGES.REFRESH_TOKEN_IS_INVALID,
-              //     status: HTTP_STATUS.UNAUTHORIZED,
-              //   });
-              // }
-              // throw error;
-              throw new ErrorWithStatus({
-                message: error,
-                status: HTTP_STATUS.UNAUTHORIZED,
-              });
+              if (error instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: error.message,
+                  status: HTTP_STATUS.UNAUTHORIZED,
+                });
+              }
+              throw error;
+
+              // throw new ErrorWithStatus({
+              //   message: "Refresh token is invalid",
+              //   status: HTTP_STATUS.UNAUTHORIZED,
+              // });
             }
             return true;
           },

@@ -9,6 +9,7 @@ const {
   resetPasswordController,
   getMeController,
   updateMeController,
+  logoutController,
 } = require("../controller/users.controllers");
 const {
   registerValidator,
@@ -201,5 +202,11 @@ userRoute.patch(
   accessTokenValidator,
   updateMeValidator,
   updateMeController
+);
+userRoute.post(
+  "/logout",
+  accessTokenValidator,
+  refreshTokenValidator,
+  logoutController
 );
 module.exports = userRoute;

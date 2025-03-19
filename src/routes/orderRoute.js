@@ -21,7 +21,6 @@ const { accessTokenValidator } = require("../middleware/users.middleware");
 const { createOrderValidator } = require("../middleware/orders.middleware");
 const { createOrderController } = require("../controller/orders.controllers");
 const { ZalopayConfig } = require("../config/zalopay");
-const { log } = require("console");
 
 const orderRoute = express.Router();
 
@@ -186,6 +185,7 @@ orderRoute.post(
   createOrderValidator,
   createOrderController
 );
+
 
 // Callback từ ZaloPay
 orderRoute.post("/callback", async (req, res) => {

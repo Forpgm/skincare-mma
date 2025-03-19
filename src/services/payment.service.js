@@ -1,11 +1,11 @@
 const { ZalopayConfig } = require("../config/zalopay");
 const moment = require("moment");
 const CryptoJS = require("crypto-js");
+
 const axios = require("axios");
 
 class PaymentService {
   async getPaymentUrl(order, products) {
-    const embed_data = {};
     const items = products.map((product) => ({
       item_id: product.product_id,
       item_name: product.name,
@@ -13,6 +13,9 @@ class PaymentService {
       item_quantity: product.quantity,
     }));
     const transID = `${moment().format("YYMMDD")}_${order._id}`;
+    const embed_data = {
+      redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
+    };
     const data = {
       app_id: ZalopayConfig.app_id,
       app_trans_id: transID,
@@ -21,7 +24,8 @@ class PaymentService {
       amount: order.end_price,
       description: `Thanh toán đơn hàng #${order._id}`,
       bank_code: "zalopayapp",
-      callback_url: `https://f15e-2001-ee0-50da-4e00-715b-4a03-c50b-5bef.ngrok-free.app/api/orders/callback`,
+      callback_url: `https://skincare-be-mma.onrender.com/api/payment/callback`,
+      redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
       embed_data: JSON.stringify(embed_data),
       item: JSON.stringify(items),
     };

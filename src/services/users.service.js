@@ -11,8 +11,10 @@ class UsersService {
   }
 
   async signAccessToken({ userId }) {
+    console.log(process.env.JWT_SECRET_ACCESS_TOKEN);
+
     const at = await signToken({
-      payload: { userId, token_type: "AcessToken" },
+      payload: { userId, token_type: "AccessToken" },
       options: { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_IN },
       privateKey: process.env.JWT_SECRET_ACCESS_TOKEN,
     });
@@ -150,6 +152,9 @@ class UsersService {
       { username, phone, birthday, gender, avatar_url },
       { new: true }
     ).select("email phone username role avatar_url gender birthday");
+  }
+  async logout(refresh_token) {
+    return await db.RefreshToken.deleteOne({ token: refresh_token });
   }
 }
 const usersService = new UsersService();
