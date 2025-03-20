@@ -47,6 +47,10 @@ const OrderSchema = mongoose.Schema(
       type: String,
       required: false,
     },
+    to_province_id: {
+      type: Number,
+      required: false,
+    },
     shipping_address: {
       type: String,
       required: false,

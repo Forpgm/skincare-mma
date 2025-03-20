@@ -52,3 +52,15 @@ exports.updateAddressController = async (req, res, next) => {
     next(error);
   }
 };
+exports.getDefaultAddressController = async (req, res, next) => {
+  try {
+    const { userId } = req.decoded_authorization;
+    const result = await addressService.getDefaultAddress(userId);
+    res.status(200).json({
+      message: "Get default address successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

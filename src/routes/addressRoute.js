@@ -7,6 +7,7 @@ const {
   addAddressController,
   deleteAddressController,
   updateAddressController,
+  getDefaultAddressController,
 } = require("../controller/address.controllers");
 const {
   addAddressValidator,
@@ -32,5 +33,10 @@ addressRouter.patch(
   accessTokenValidator,
   updateAddressValidator,
   updateAddressController
+);
+addressRouter.get(
+  "/default",
+  accessTokenValidator,
+  getDefaultAddressController
 );
 exports.addressRouter = addressRouter;

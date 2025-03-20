@@ -1,5 +1,5 @@
 var express = require("express");
-const { searchController } = require("../controller/search.controllers.js");
+const { searchController } = require("../controller/search.controllers");
 var searchRouter = express.Router();
 
 searchRouter.get("/", searchController);

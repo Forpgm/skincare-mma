@@ -39,7 +39,16 @@ exports.getPackageServicesController = async (req, res, next) => {
 };
 exports.getFeeController = async (req, res, next) => {
   try {
-    const result = await shipServices.getFee(req.body);
+    const packageServices = await shipServices.getPackageServices(
+      req.body.to_district_id
+    );
+
+    const payload = {
+      service_id: packageServices[0].service_id,
+      to_district_id: req.body.to_district_id,
+      to_ward_code: req.body.to_ward_code,
+    };
+    const result = await shipServices.getFee(payload);
     return res.json({
       message: "Lấy phí vận chuyển thành công",
       result,

@@ -159,6 +159,19 @@ class OrderService {
     }
     return order;
   }
+  async getOrder(orderId) {
+    const order = await db.Order.findById(orderId);
+    const orderDetail = await db.OrderDetail.find({
+      order_id: order._id,
+    }).select("-_id -__v -createdAt -updatedAt -order_id");
+    return {
+      ...order._doc,
+      product_id: orderDetail.map((item) => item.product_id),
+      variation_id: orderDetail.map((item) => item.variation_id),
+      quantity: orderDetail.map((item) => item.quantity),
+      price: orderDetail.map((item) => item.price),
+    };
+  }
 }
 const orderService = new OrderService();
 exports.orderService = orderService;

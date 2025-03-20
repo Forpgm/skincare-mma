@@ -3,7 +3,7 @@ const { paymentService } = require("../services/payment.service");
 const { shipServices } = require("../services/ship.service");
 const CryptoJS = require("crypto-js");
 const { ZalopayConfig } = require("../config/zalopay");
-const e = require("express");
+
 const { ORDER_STATUS } = require("../constants/enum");
 
 exports.createPaymentController = async (req, res, next) => {
@@ -58,9 +58,13 @@ exports.createPaymentController = async (req, res, next) => {
 
     // tạo payment url
     const result = await paymentService.getPaymentUrl(order, products);
+
     res.status(200).json({
       message: "payment created successfully",
-      result,
+      result: {
+        ...result,
+        order_id: order._id,
+      },
     });
   } catch (error) {
     next(error);
@@ -68,6 +72,8 @@ exports.createPaymentController = async (req, res, next) => {
 };
 
 exports.checkPaymentResultController = async (req, res, next) => {
+  console.log(123);
+
   let result = {};
   let orderId = null;
   try {
@@ -151,6 +157,89 @@ exports.checkPaymentResultController = async (req, res, next) => {
   console.log("Return result:", result);
 
   return res.redirect(
-    `com.anonymous.myapp://payment?apptransid=${req.body.data.app_trans_id}`
+    `com.anonymous.myapp://payment?status=delivering&order_id=${orderId}`
   );
 };
+
+// exports.checkPaymentResultController = async (req, res, next) => {
+//   let data = req.query;
+//   let dataStr = req.body.data;
+//   console.log("Received dataStr: ", dataStr);
+//   let dataJson = typeof dataStr === "string" ? JSON.parse(dataStr) : dataStr;
+
+//   // cập nhật order status pending - delivering
+//   const orderId = dataJson.app_trans_id.split("_")[1]; // Lấy order_id
+
+//   const order = await db.Order.findOneAndUpdate(
+//     { _id: orderId },
+//     { $set: { status: ORDER_STATUS.DELIVERING } },
+//     { new: true }
+//   );
+//   let checksumData =
+//     data.appid +
+//     "|" +
+//     data.apptransid +
+//     "|" +
+//     data.pmcid +
+//     "|" +
+//     data.bankcode +
+//     "|" +
+//     data.amount +
+//     "|" +
+//     data.discountamount +
+//     "|" +
+//     data.status;
+
+//   let checksum = CryptoJS.HmacSHA256(
+//     checksumData,
+//     ZalopayConfig.key2
+//   ).toString();
+
+//   if (checksum != data.checksum) {
+//     res.sendStatus({
+//       return_code: -1,
+//       return_message: "Invalid checksum",
+//     });
+//   } else {
+//     await db.Transaction.create({
+//       orderId: orderId,
+//       appTransId: data.apptransid,
+//       zpTransId: dataJson.zp_trans_id,
+//       amount: dataJson.amount,
+//       paymentMethod: "ZALOPAY",
+//       status: "PAID",
+//     });
+//     // đặt đơn trên ghn
+//     const orderParam = {
+//       userId: order.user_id,
+//       fee: order.shipping_fee,
+//       cartList: dataJson.item,
+//       service_id: order.service_id,
+//       to_district_id: order.to_district_id,
+//       to_ward_code: order.to_ward_code,
+//       to_address: order.shipping_address,
+//       phone_number: order.phone_number,
+//       to_phone: order.phone_number,
+//       to_name: order.receiver_name,
+//     };
+
+//     const orderGHN = await shipServices.createOrder(
+//       orderParam.cartList,
+//       orderParam
+//     );
+
+//     await db.Order.findOneAndUpdate(
+//       {
+//         _id: orderId,
+//       },
+//       {
+//         $set: {
+//           ghn_order_code: orderGHN.data.order_code,
+//           expected_delivery_date: orderGHN.data.expected_delivery_time,
+//         },
+//       }
+//     );
+//   }
+//   console.log("Return result:", result);
+//   return res.status(200).json(result);
+// };

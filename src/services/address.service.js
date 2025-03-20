@@ -29,6 +29,18 @@ class AddressService {
       { timestamps: true }
     );
   }
+  async getDefaultAddress(userId) {
+    let addresses = await db.Address.findOne({
+      user_id: new ObjectId(String(userId)),
+      is_default: true,
+    }).sort({ createdAt: -1 });
+    if (addresses === null) {
+      addresses = await db.Address.findOne({
+        user_id: new ObjectId(String(userId)),
+      }).sort({ createdAt: -1 });
+    }
+    return addresses;
+  }
 }
 const addressService = new AddressService();
 exports.addressService = addressService;

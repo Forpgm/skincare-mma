@@ -6,8 +6,6 @@ const axios = require("axios");
 
 class PaymentService {
   async getPaymentUrl(order, products) {
-    console.log("order", order);
-
     const items = products.map((product) => ({
       item_id: product.product_id,
       item_variation_id: product.variation_id,
@@ -16,10 +14,38 @@ class PaymentService {
       item_quantity: product.quantity,
     }));
     const transID = `${moment().format("YYMMDD")}_${order._id}`;
-
     const embed_data = {
       redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
     };
+
+    // tính checksum
+    let checksumData =
+      ZalopayConfig.app_id +
+      "|" +
+      transID +
+      "|" +
+      38 +
+      "|" +
+      "zalopayapp" +
+      "|" +
+      order.end_price +
+      "|" +
+      0 +
+      "|" +
+      1;
+    let checksum = CryptoJS.HmacSHA256(
+      checksumData,
+      ZalopayConfig.key2
+    ).toString();
+    console.log("checksum", checksum);
+    // console.log(
+    //   `https://ff9f-2402-800-63a9-a094-3d4d-96b4-9431-9e28.ngrok-free.app/api/payment/callback?appid=${
+    //     ZalopayConfig.app_id
+    //   }&apptransid=${transID}&pmcid=${38}&bankcode=zalopayapp&amount=${
+    //     order.end_price
+    //   }&discountamount=0&status=1&checksum=${checksum}`
+    // );
+
     const data = {
       app_id: ZalopayConfig.app_id,
       app_trans_id: transID,
@@ -28,8 +54,13 @@ class PaymentService {
       amount: order.end_price,
       description: `Thanh toán đơn hàng #${order._id}`,
       bank_code: "zalopayapp",
-      callback_url: `https://9eb4-118-69-182-149.ngrok-free.app/api/payment/callback`,
-      redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
+      //callback_url: `https://ff9f-2402-800-63a9-a094-3d4d-96b4-9431-9e28.ngrok-free.app/api/payment/callback`,
+      callback_url: `https://ff9f-2402-800-63a9-a094-3d4d-96b4-9431-9e28.ngrok-free.app/api/payment/callback?appid=${
+        ZalopayConfig.app_id
+      }&apptransid=${transID}&pmcid=${38}&bankcode=zalopayapp&amount=${
+        order.end_price
+      }&discountamount=0&status=1&checksum=${checksum}`,
+      redirecturl: `com.anonymous.myapp://payment?status=delivering&order_id=${order._id}`,
       embed_data: JSON.stringify(embed_data),
       item: JSON.stringify(items),
     };

@@ -127,3 +127,33 @@ exports.cancelOrderValidator = validate(
     },
   })
 );
+exports.getOrderValidator = validate(
+  checkSchema(
+    {
+      id: {
+        notEmpty: {
+          errorMessage: "Id is required",
+        },
+        isMongoId: {
+          errorMessage: "Id is invalid",
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const existingOrder = await db.Order.findOne({
+              _id: value,
+              user_id: req.decoded_authorization.userId,
+            });
+            if (!existingOrder) {
+              throw new ErrorWithStatus({
+                message: "Order not found",
+                status: HTTP_STATUS.NOT_FOUND,
+              });
+            }
+            return true;
+          },
+        },
+      },
+    },
+    ["params"]
+  )
+);
