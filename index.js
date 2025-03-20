@@ -36,7 +36,6 @@ const { payRouter } = require("./src/routes/paymentRoute");
 const shipRouter = require("./src/routes/shipRoute");
 const { addressRouter } = require("./src/routes/addressRoute");
 
-
 var app = express();
 app.use(cors());
 
@@ -81,7 +80,7 @@ app.use("/api/address", addressRouter);
 setupSwagger(app);
 
 //const HOST_NAME = process.env.HOST_NAME;
-const HOST_NAME = "127.0.0.1";
+const HOST_NAME = process.env.HOST_NAME || "localhost";
 const PORT = process.env.PORT;
 
 app.listen(PORT, HOST_NAME, () => {
