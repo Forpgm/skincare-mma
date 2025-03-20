@@ -21,6 +21,7 @@ const OrderDetail = require("./orderDetail.model");
 const Voucher = require("./voucher.model");
 
 const Address = require("./address.model");
+const Transaction = require("./transaction.model");
 
 const db = {};
 
@@ -42,6 +43,7 @@ db.QuizTemplateScore = QuizTemplateScore;
 db.QuizResult = QuizResult;
 db.Order = Order;
 db.OrderDetail = OrderDetail;
+db.Transaction = Transaction;
 
 db.Voucher = Voucher;
 db.Address = Address;

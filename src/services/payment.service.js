@@ -6,13 +6,17 @@ const axios = require("axios");
 
 class PaymentService {
   async getPaymentUrl(order, products) {
+    console.log("order", order);
+
     const items = products.map((product) => ({
       item_id: product.product_id,
+      item_variation_id: product.variation_id,
       item_name: product.name,
       item_price: product.price,
       item_quantity: product.quantity,
     }));
     const transID = `${moment().format("YYMMDD")}_${order._id}`;
+
     const embed_data = {
       redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
     };
@@ -24,12 +28,11 @@ class PaymentService {
       amount: order.end_price,
       description: `Thanh toán đơn hàng #${order._id}`,
       bank_code: "zalopayapp",
-      callback_url: `https://skincare-be-mma.onrender.com/api/payment/callback`,
+      callback_url: `https://9eb4-118-69-182-149.ngrok-free.app/api/payment/callback`,
       redirecturl: `com.anonymous.myapp://payment?apptransid=${transID}`,
       embed_data: JSON.stringify(embed_data),
       item: JSON.stringify(items),
     };
-    console.log(data);
 
     const dataString = `${data.app_id}|${data.app_trans_id}|${data.app_user}|${data.amount}|${data.app_time}|${data.embed_data}|${data.item}`;
     data.mac = CryptoJS.HmacSHA256(dataString, ZalopayConfig.key1).toString();
@@ -39,8 +42,6 @@ class PaymentService {
     });
 
     if (response.data.return_code !== 1) {
-      console.log(response.data);
-
       throw new Error(`ZaloPay Error: ${response.data.return_message}`);
     }
 

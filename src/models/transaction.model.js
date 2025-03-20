@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const transactionSchema = new mongoose.Schema(
+const TransactionSchema = new mongoose.Schema(
   {
     orderId: { type: String, required: true, unique: true }, // Mã đơn hàng nội bộ
     appTransId: { type: String, required: true, unique: true }, // Mã giao dịch ZaloPay
@@ -17,4 +17,6 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Transaction", transactionSchema);
+const Transaction = mongoose.model("Transaction", TransactionSchema);
+
+module.exports = Transaction;

@@ -3,6 +3,7 @@ const { config } = require("dotenv");
 const { ErrorWithStatus } = require("../models/errors");
 const { SHIP_MESSAGES } = require("../constants/message");
 const { HTTP_STATUS } = require("../constants/httpStatus");
+const db = require("../models/index");
 
 config();
 class ShipServices {
@@ -112,9 +113,13 @@ class ShipServices {
     return newPackageServices;
   }
 
-  async getFee(feeReq, cartList) {
-    const { service_id, to_district_id, to_ward_code } = feeReq;
-
+  async getFee(payload) {
+    const { service_id, to_district_id, to_ward_code } = payload;
+    const feeReq = {
+      service_id,
+      to_district_id,
+      to_ward_code,
+    };
     // kiểm tra xem to_district_id có tồn tại không ?
     const checkToDistrict = await this.getWards(to_district_id);
     // kiểm tra xem to_ward_code có tồn tại không ?
@@ -122,9 +127,11 @@ class ShipServices {
       (ward) => ward.WardCode.toString() === to_ward_code
     );
     // kiểm tra xem service_id có tồn tại không ?
-    const packageServices = await this.getPackageServices(to_district_id); // 3695: TP thủ đức
+    const packageServices =
+      (await this.getPackageServices(to_district_id)) || []; // 3695: TP thủ đức
+
     const checkService = packageServices.find(
-      (service) => service.service_id.toString() === service_id
+      (service) => service.service_id == service_id
     );
 
     if (!checkToDistrict) {
@@ -146,20 +153,15 @@ class ShipServices {
       });
     }
 
-    const totalWeight = cartList.cart_list.reduce((result, item) => {
-      return (result += (item.weight | 10) * item.quantity);
-    }, 0);
-    const countOfBox = cartList.allQuality / 6;
     const param = {
       ...feeReq,
-      // những thông tin dưới đây mình để mặc định khi nào có api get thì mình bỏ vào
       from_district_id: 3695, // tp Thủ đức
-      insurance_value: cartList.totalMoney, // giá tiền của cả đơn hàng
-      coupon: null, // mã giảm giá
-      height: 30 * countOfBox,
-      length: 60,
-      weight: totalWeight,
-      width: 45,
+      insurance_value: "10000",
+      coupon: null,
+      height: 20,
+      length: 20,
+      weight: 500,
+      width: 20,
     };
     const result = await axios.get(
       `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
@@ -180,78 +182,46 @@ class ShipServices {
     };
   }
 
-  async createOrder(createOrderParams) {
-    const user = await db.User.findOne({
-      where: {
-        id: createOrderParams.user_id,
-      },
-    });
-
-    if (!user) {
-      throw new ErrorWithStatus({
-        message: USER_MESSAGES.USER_NOT_FOUND,
-        status: HTTP_STATUS.BAD_REQUEST,
-      });
-    }
-
-    const cartListToOrder = createOrderParams.cartList.cart_list.map((item) => {
+  async createOrder(productList, orderParams) {
+    const products = JSON.parse(productList);
+    const orderList = products.map((item) => {
       return {
-        name: item.name,
-        code: item.id.toString(),
-        quantity: item.quantity,
-        price: item.price,
-        length: 10,
-        width: 15,
-        height: 30,
-        weight: item.weight,
-        category: {
-          level1: item.ship_category_id,
-        },
+        name: item.item_name,
+        variant_id: item.item_variation_id,
+        quantity: item.item_quantity,
+        price: item.item_price,
+        length: 20,
+        width: 20,
+        height: 20,
+        weight: 500,
       };
     });
+    console.log(orderList);
+
     const body = {
-      // thông tin của shop
-      payment_type_id: 1, // người bán trả tiền vì khách đã thanh toán trước đó
-      note: "Please call before delivery", // ghi chú
-      required_note: "KHONGCHOXEMHANG",
-      from_name: "DAIRY_STORE", // tên shop
-      from_phone: "0787806042", // số điện thoại của shop
+      to_name: orderParams.to_name,
+      from_name: "SKINCARE_STORE",
+      from_phone: "0949309132",
       from_address:
-        "115/13 đường Đình Phong Phú, Phường Tăng Nhơn Phú B, Quận 9, Hồ Chí Minh, Vietnam",
+        "Lô E2a-7, Đường D1, Khu Công nghệ cao, P.Long Thạnh Mỹ, Tp. Thủ Đức, TP.HCM",
       from_ward_name: "Phường Tăng Nhơn Phú B",
       from_district_name: "Thành Phố Thủ Đức",
       from_province_name: "HCM",
-      // địa chỉ trả bưu kiện nếu không giao đc
-      return_phone: "0787806042",
-      return_address:
-        "115/13 đường Đình Phong Phú, Phường Tăng Nhơn Phú B, Quận 9, Hồ Chí Minh, Vietnam",
-      return_district_id: null,
-      return_ward_code: "",
-      client_order_code: "",
-      // thông tin khách hàng
-      //    thông tin cá nhân khách hàng
-      // to_name: user.first_name + ' ' + user.last_name, // username của khách hàng
-      to_name: createOrderParams.receiver_name, // username của khách hàng
-      to_phone: createOrderParams.phone_number, // số điện thoại của khách hàng
-      to_address: createOrderParams.address, // địa chỉ của khách hàng
-      to_ward_code: createOrderParams.to_ward_code,
-      to_district_id: Number(createOrderParams.to_district_id),
-      cod_amount: 0, // tiền mặt sẽ thu từ khách hàng, là 0 vì minh đã thanh toán trước
-      content: createOrderParams.content,
-      weight: createOrderParams.fee.totalWeight,
-      length: createOrderParams.fee.totalLength,
-      width: createOrderParams.fee.totalWidth,
-      height: createOrderParams.fee.totalHeight,
-      pick_station_id: Number(createOrderParams.to_district_id), // nơi shiper đến lấy hàng
-      deliver_station_id: null,
-      insurance_value: createOrderParams.cartList.totalMoney, // tổng tiền hàng để nếu có vấn đề sẽ đc bồi thường
-      service_id: Number(createOrderParams.service_id), // lấy service_id từ của người dùng truyền lên
-      service_type_id: 0,
-      coupon: null,
-      pick_shift: [2],
-      // danh sách sản phẩm
-      items: cartListToOrder,
+      to_phone: orderParams.to_phone,
+      to_address: orderParams.to_address,
+      to_ward_code: orderParams.to_ward_code,
+      to_district_id: Number(orderParams.to_district_id),
+      weight: 500,
+      length: 20,
+      width: 20,
+      height: 20,
+      service_type_id: 2,
+      payment_type_id: 1,
+      required_note: "KHONGCHOXEMHANG",
+      items: orderList,
+      insurance_value: 100000,
     };
+    console.log(body);
 
     const result = await axios.post(
       `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create`,

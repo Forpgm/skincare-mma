@@ -1,14 +1,8 @@
 const { orderService } = require("../services/orders.service");
 
-exports.createOrderController = async (req, res, next) => {
+exports.cancelOrderController = async (req, res) => {
   try {
-    const { products } = req.body;
-    const { userId } = req.decoded_authorization;
-    const result = await orderService.createOrder(userId, products);
-    res.status(200).json({
-      message: "Order created successfully",
-      result,
-    });
+    const result = await orderService.cancelOrder(req.body.order_id);
   } catch (error) {
     next(error);
   }

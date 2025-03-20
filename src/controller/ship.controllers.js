@@ -1,6 +1,4 @@
-const { omit } = require("lodash");
-const { shipServices } = require("../services/ship.service");
-const { orderService } = require("../services/orders.service");
+const { shipServices } = require("../services/ship.service.js");
 
 exports.getProvincesController = async (req, res, next) => {
   try {
@@ -41,60 +39,40 @@ exports.getPackageServicesController = async (req, res, next) => {
 };
 exports.getFeeController = async (req, res, next) => {
   try {
-    const feeReq = omit(req.body, ["cart_list"]);
-    const { voucher_code } = req.body;
-
-    const cart_list = req.body.cart_list;
-    const cartList = await orderService.convertCartList({
-      cart_list,
-      voucher_code,
+    const result = await shipServices.getFee(req.body);
+    return res.json({
+      message: "Lấy phí vận chuyển thành công",
+      result,
     });
-    const fee = await shipServices.getFee(feeReq, cartList);
-    return res.json({ ...cartList, fee });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
-
 exports.createOrderController = async (req, res, next) => {
   try {
-    const userId = req.decoded_authorization.user_id;
-    const {
-      service_id,
-      to_district_id,
-      to_ward_code,
-      address,
-      phone_number,
-      receiver_name,
-      content,
-      cart_list,
-      voucher_code,
-    } = req.body;
-    const cartList = await orderService.convertCartList({
-      cart_list,
-      voucher_code,
+    const { products } = req.body;
+    const { userId } = req.decoded_authorization;
+    const orderParams = {
+      service_id: req.body.service_id,
+      to_district_id: req.body.to_district_id,
+      to_ward_code: req.body.to_ward_code,
+      to_address: req.body.to_address,
+      to_phone: req.body.to_phone,
+      to_name: req.body.to_name,
+      insurance_value: req.body.insurance_value,
+      service_type_id: req.body.service_type_id,
+    };
+
+    const result = await shipServices.createOrder(
+      userId,
+      products,
+      orderParams
+    );
+    res.status(200).json({
+      message: "Order created successfully",
+      result,
     });
-
-    const getFreePackage = {
-      service_id,
-      to_district_id,
-      to_ward_code,
-    };
-    const fee = await shipServices.getFee(getFreePackage, cartList);
-    const createOrderParam = {
-      userId: userId,
-      fee,
-      cartList,
-      ...getFreePackage,
-      address,
-      phone_number,
-      content,
-      receiver_name,
-    };
-
-    const order = await shipServices.createOrder(createOrderParam);
-    return res.json(order);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };

@@ -3,8 +3,9 @@ const { paymentService } = require("./payment.service");
 const { ObjectId } = require("mongodb");
 const { ErrorWithStatus } = require("../models/errors");
 const { HTTP_STATUS } = require("../constants/httpStatus");
+const { ORDER_STATUS } = require("../constants/enum");
 class OrderService {
-  async createOrder(userId, products) {
+  async createPayment(userId, products) {
     const order = await db.Order.create({
       user_id: userId,
       total_quantity: products.reduce(
@@ -137,6 +138,26 @@ class OrderService {
       allQuality,
       totalMoney,
     };
+  }
+  async cancelOrder(orderId) {
+    const order = await db.Order.findOneAndUpdate(
+      {
+        _id: ObjectId(orderId),
+      },
+      {
+        status: ORDER_STATUS.CANCELLED,
+      },
+      {
+        new: true,
+      }
+    );
+    if (!order) {
+      throw new ErrorWithStatus({
+        message: "Order not found",
+        status: HTTP_STATUS.NOT_FOUND,
+      });
+    }
+    return order;
   }
 }
 const orderService = new OrderService();

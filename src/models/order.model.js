@@ -19,6 +19,10 @@ const OrderSchema = mongoose.Schema(
       type: String,
       required: false,
     },
+    service_id: {
+      type: Number,
+      required: false,
+    },
     discount: {
       type: Number,
       required: false,
@@ -31,11 +35,27 @@ const OrderSchema = mongoose.Schema(
       type: Number,
       required: false,
     },
+    expected_delivery_time: {
+      type: Date,
+      required: false,
+    },
+    to_district_id: {
+      type: Number,
+      required: false,
+    },
+    to_ward_code: {
+      type: String,
+      required: false,
+    },
     shipping_address: {
       type: String,
       required: false,
     },
     receiver_name: {
+      type: String,
+      required: false,
+    },
+    phone_number: {
       type: String,
       required: false,
     },
@@ -45,16 +65,9 @@ const OrderSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "SHIPPING", "SUCCESS", "CANCELED"],
+      enum: ["PENDING", "DELIVERING", "SUCCESS", "CANCELED"],
       required: true,
-    },
-    feedback: {
-      type: String,
-      default: null,
-    },
-    feedbackAt: {
-      type: Date,
-      default: null,
+      default: "PENDING",
     },
   },
   { timestamps: true }
