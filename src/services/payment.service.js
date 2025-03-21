@@ -55,7 +55,7 @@ class PaymentService {
       description: `Thanh toán đơn hàng #${order._id}`,
       bank_code: "zalopayapp",
       //callback_url: `https://ff9f-2402-800-63a9-a094-3d4d-96b4-9431-9e28.ngrok-free.app/api/payment/callback`,
-      callback_url: `https://ff9f-2402-800-63a9-a094-3d4d-96b4-9431-9e28.ngrok-free.app/api/payment/callback?appid=${
+      callback_url: `https://bcab-2402-800-63a9-a094-a9d6-bb34-ee6b-1c80.ngrok-free.app/api/payment/callback?appid=${
         ZalopayConfig.app_id
       }&apptransid=${transID}&pmcid=${38}&bankcode=zalopayapp&amount=${
         order.end_price

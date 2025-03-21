@@ -53,7 +53,7 @@ exports.addWishListValidator = validate(
           },
         },
       },
-      variant_id: {
+      variation_id: {
         notEmpty: {
           errorMessage: "Variant id is required",
         },
@@ -103,7 +103,7 @@ exports.deleteWishListValidator = validate(
           },
         },
       },
-      variant_id: {
+      variation_id: {
         notEmpty: {
           errorMessage: "Variant id is required",
         },
@@ -112,6 +112,8 @@ exports.deleteWishListValidator = validate(
         },
         custom: {
           options: async (value, { req }) => {
+            console.log(req.body.product_id, value);
+
             const existingVariant = await db.ProductVariation.findById({
               _id: value,
               product_id: req.body.product_id,
@@ -119,7 +121,7 @@ exports.deleteWishListValidator = validate(
               deletedBy: null,
             });
             if (!existingVariant) {
-              throw new Error("Variant id is invalid");
+              throw new Error("Variation id is invalid");
             }
             return true;
           },

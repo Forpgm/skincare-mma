@@ -6,7 +6,7 @@ exports.addWishListController = async (req, res, next) => {
     const { userId } = req.decoded_authorization;
     const result = await wishListService.addWishList(userId, req.body);
     res.status(200).send({
-      message: WISH_LIST_MESSAGES.ADD_WISH_LIST_SUCCESSFULLY,
+      message: "Thêm vào danh sách yêu thích thành công",
       result,
     });
   } catch (error) {
@@ -18,7 +18,7 @@ exports.deleteWishListController = async (req, res, next) => {
     const { userId } = req.decoded_authorization;
     const result = await wishListService.deleteWishList(userId, req.body);
     res.status(200).send({
-      message: WISH_LIST_MESSAGES.DELETE_WISH_LIST_SUCCESSFULLY,
+      message: "Xóa khỏi danh sách yêu thích thành công",
       result,
     });
   } catch (error) {

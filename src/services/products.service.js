@@ -199,6 +199,81 @@ class ProductService {
       );
 
       return finalProducts;
+    } else if ("brand_id" in query) {
+      const products = await db.Product.find({
+        brand_id: query.brand_id,
+      });
+      const thumbnail = await db.Image.find({
+        parent_id: { $in: products.map((product) => product._id) },
+      }).select("image_url _id parent_id");
+
+      const productVariations = await db.ProductVariation.find({
+        product_id: { $in: products.map((product) => product._id) },
+      });
+
+      // Nhóm variations theo product_id
+      const productVariationsGroup = _.groupBy(productVariations, "product_id");
+
+      // Lấy brand name
+      const brandNames = await db.Brand.find({
+        _id: { $in: products.map((product) => product.brand_id) },
+      });
+
+      let finalProducts = [];
+
+      products.forEach((product) => {
+        const img = thumbnail
+          .filter(
+            (thumb) => thumb.parent_id.toString() === product._id.toString()
+          )
+          .map((thumb) => thumb.image_url);
+
+        const brandName = brandNames.find(
+          (brand) => brand._id.toString() === product.brand_id.toString()
+        )?.name;
+
+        // Nếu có variations, tạo các sản phẩm riêng biệt
+        const variations = productVariationsGroup[product._id] || [];
+        if (variations.length > 0) {
+          variations.forEach((variation) => {
+            const attrText = Array.from(variation.attributes.entries())
+              .map(([key, value]) => `${key} ${value}`)
+              .join(" ");
+            finalProducts.push({
+              _id: variation._id,
+              product_id: product._id,
+              name: `${product.name} ${attrText}`,
+              category_id: product.category_id,
+              description: product.description,
+              thumbnails: img,
+              instruction: product.instruction,
+              origin: product.origin,
+              total_rating: product.total_rating,
+              brandName: brandName,
+              images: variation.images.length > 0 ? variation.images : img,
+              price: variation.price,
+              quantity: variation.quantity,
+            });
+          });
+        } else {
+          // Trường hợp không có variation
+          finalProducts.push({
+            _id: product._id,
+            name: product.name,
+            category_id: product.category_id,
+            description: product.description,
+            instruction: product.instruction,
+            origin: product.origin,
+            total_rating: product.total_rating,
+            brandName: brandName,
+            images: img,
+            price: null,
+            quantity: null,
+          });
+          return finalProducts;
+        }
+      });
+      return finalProducts;
     }
   }
   async updateProduct(userId, payload) {

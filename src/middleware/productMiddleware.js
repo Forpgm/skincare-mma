@@ -267,6 +267,28 @@ exports.getProductByCriteriaValidator = validate(
           },
         },
       },
+      brand_id: {
+        optional: true,
+        isMongoId: {
+          errorMessage: "Invalid brand id",
+        },
+        custom: {
+          options: async (value) => {
+            const brand = await db.Brand.findById({
+              _id: new ObjectId(String(value)),
+              deletedAt: null,
+              deletedBy: null,
+            });
+            if (!brand) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: "Brand not found",
+              });
+            }
+            return true;
+          },
+        },
+      },
     },
 
     ["query"]
