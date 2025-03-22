@@ -86,21 +86,24 @@ const phoneSchema = {
 };
 const confirmPasswordSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED,
+    errorMessage: "Confirm password is required",
   },
   isString: {
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING,
+    errorMessage: "Confirm password must be a string",
   },
   isLength: {
     options: {
       min: 6,
       max: 50,
     },
-    errorMessage: USERS_MESSAGES.CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_6_TO_50,
+    errorMessage: "Confirm password length must be from 6 to 50",
   },
   custom: {
-    options: (value, { req }) => {
-      if (value !== req.body.newPassword) {
+    options: async (value, { req }) => {
+      const hashedPassword = await hashPassword(req.body.password);
+      const isMatch = await comparePassword(value, hashedPassword);
+
+      if (!isMatch) {
         throw new Error(
           USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD
         );
@@ -483,6 +486,66 @@ exports.updateMeValidator = validate(
         optional: true,
         isURL: {
           errorMessage: "Avatar không hợp lệ",
+        },
+      },
+    },
+    ["body"]
+  )
+);
+exports.changePasswordValidator = validate(
+  checkSchema(
+    {
+      old_password: {
+        notEmpty: { errorMessage: "Old password is required" },
+        isString: { errorMessage: "Old password must be a string" },
+        isLength: {
+          options: { min: 6, max: 50 },
+          errorMessage: "Old password length must be from 6 to 50",
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const userId = req.decoded_authorization.userId;
+            const account = await db.Account.findOne({
+              _id: new ObjectId(userId),
+            });
+
+            if (!account) {
+              throw new ErrorWithStatus({
+                message: "User not found",
+                status: HTTP_STATUS.UNAUTHORIZED,
+              });
+            }
+
+            const isPasswordMatch = await comparePassword(
+              value,
+              account.password
+            );
+            if (!isPasswordMatch) {
+              throw new ErrorWithStatus({
+                message: "Old password is incorrect",
+                status: HTTP_STATUS.UNAUTHORIZED,
+              });
+            }
+
+            return true;
+          },
+        },
+      },
+      password: passwordSchema,
+      confirm_password: {
+        notEmpty: { errorMessage: "Confirm password is required" },
+        isString: { errorMessage: "Confirm password must be a string" },
+        isLength: {
+          options: { min: 6, max: 50 },
+          errorMessage: "Confirm password length must be from 6 to 50",
+        },
+        custom: {
+          options: (value, { req }) => {
+            if (value !== req.body.password) {
+              throw new Error("Confirm password must be the same as password");
+            }
+            return true;
+          },
         },
       },
     },

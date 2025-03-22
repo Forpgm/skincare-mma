@@ -131,3 +131,15 @@ exports.logoutController = async (req, res, next) => {
     next(error);
   }
 };
+exports.changePasswordController = async (req, res, next) => {
+  try {
+    const { userId } = req.decoded_authorization;
+    const result = await usersService.changePassword(userId, req.body);
+    res.status(200).send({
+      message: "Change password successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../models/index");
 const { verifyToken, signToken } = require("../utils/jwt");
 const { ObjectId } = require("mongodb");
+const { hashPassword } = require("../utils/crypto");
 class UsersService {
   decodeRefreshToken(refreshToken) {
     return verifyToken({
@@ -155,6 +156,19 @@ class UsersService {
   }
   async logout(refresh_token) {
     return await db.RefreshToken.deleteOne({ token: refresh_token });
+  }
+  async changePassword(userId, payload) {
+    const { password } = payload;
+
+    const hashedPassword = await hashPassword(password);
+    await db.Account.updateOne(
+      { _id: userId },
+      { password: hashedPassword },
+      { new: true }
+    );
+    return await db.Account.findOne({ _id: userId }).select(
+      "email phone username role avatar_url birthday"
+    );
   }
 }
 const usersService = new UsersService();

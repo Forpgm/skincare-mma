@@ -22,14 +22,14 @@ const {
   createOrderValidator,
   cancelOrderValidator,
   getOrderValidator,
+  getOrdersByCriteriaValidator,
 } = require("../middleware/orders.middleware");
 const {
   createOrderController,
   cancelOrderController,
   getOrderController,
+  getOrdersByCriteriaController,
 } = require("../controller/orders.controllers");
-const { ZalopayConfig } = require("../config/zalopay");
-const { createPaymentValidator } = require("../middleware/paymentMiddleware");
 
 const orderRoute = express.Router();
 
@@ -41,8 +41,14 @@ orderRoute.post(
 );
 orderRoute.get(
   "/:id",
-  // accessTokenValidator,
-  // getOrderValidator,
+  accessTokenValidator,
+  getOrderValidator,
   getOrderController
+);
+orderRoute.get(
+  "/",
+  accessTokenValidator,
+  getOrdersByCriteriaValidator,
+  getOrdersByCriteriaController
 );
 module.exports = orderRoute;

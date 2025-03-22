@@ -157,3 +157,16 @@ exports.getOrderValidator = validate(
     ["params"]
   )
 );
+exports.getOrdersByCriteriaValidator = validate(
+  checkSchema(
+    {
+      status: {
+        optional: true,
+        isString: {
+          errorMessage: "Status must be a string",
+        },
+      },
+    },
+    ["query"]
+  )
+);

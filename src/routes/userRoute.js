@@ -10,6 +10,7 @@ const {
   getMeController,
   updateMeController,
   logoutController,
+  changePasswordController,
 } = require("../controller/users.controllers");
 const {
   registerValidator,
@@ -20,6 +21,7 @@ const {
   resetPasswordValidator,
   accessTokenValidator,
   updateMeValidator,
+  changePasswordValidator,
 } = require("../middleware/users.middleware");
 
 const userRoute = express.Router();
@@ -209,4 +211,11 @@ userRoute.post(
   refreshTokenValidator,
   logoutController
 );
+userRoute.put(
+  "/change-password",
+  accessTokenValidator,
+  changePasswordValidator,
+  changePasswordController
+);
+
 module.exports = userRoute;

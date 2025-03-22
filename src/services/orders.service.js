@@ -4,6 +4,8 @@ const { ObjectId } = require("mongodb");
 const { ErrorWithStatus } = require("../models/errors");
 const { HTTP_STATUS } = require("../constants/httpStatus");
 const { ORDER_STATUS } = require("../constants/enum");
+const { default: axios } = require("axios");
+const { body } = require("express-validator");
 class OrderService {
   async createPayment(userId, products) {
     const order = await db.Order.create({
@@ -76,7 +78,7 @@ class OrderService {
       },
     });
 
-    // bỏ những đứa hết hạng
+    // bỏ những đứa hết hạn
     productPriceList = productPriceList.filter((item) => {
       const isDated =
         item.ending_timestamp && item.ending_timestamp < new Date();
@@ -164,13 +166,95 @@ class OrderService {
     const orderDetail = await db.OrderDetail.find({
       order_id: order._id,
     }).select("-_id -__v -createdAt -updatedAt -order_id");
+    const productIds = orderDetail.map((item) => item.product_id);
+    const products = await db.Product.find({
+      _id: {
+        $in: productIds,
+      },
+    });
+    const ProductVariationIds = await db.ProductVariation.find({
+      _id: {
+        $in: orderDetail.map((item) => item.variation_id),
+      },
+    });
+    console.log(ProductVariationIds);
+
+    const result = orderDetail.map((item) => {
+      const product = products.find((product) =>
+        product._id.equals(item.product_id)
+      );
+      console.log(product);
+
+      return {
+        ...item._doc,
+        product: product,
+        name: product.name,
+        images: ProductVariationIds.find((variation) =>
+          variation._id.equals(item.variation_id)
+        ).images,
+      };
+    });
     return {
       ...order._doc,
-      product_id: orderDetail.map((item) => item.product_id),
-      variation_id: orderDetail.map((item) => item.variation_id),
-      quantity: orderDetail.map((item) => item.quantity),
-      price: orderDetail.map((item) => item.price),
+      orderDetail: result,
     };
+  }
+  async getAllOrders() {
+    return await db.Order.find();
+  }
+
+  async getOrdersByCriteria(status) {
+    const orders = await db.Order.find({
+      status: status.toUpperCase(),
+    });
+
+    const orderDetails = await db.OrderDetail.find({
+      order_id: {
+        $in: orders.map((order) => order._id),
+      },
+    });
+
+    const productIds = orderDetails.map((item) => item.product_id);
+    const products = await db.Product.find({
+      _id: {
+        $in: productIds,
+      },
+    }).select("_id name"); // Chỉ lấy _id và name
+
+    const variations = await db.ProductVariation.find({
+      _id: {
+        $in: orderDetails.map((orderDetail) => orderDetail.variation_id),
+      },
+    });
+
+    const result = orders.map((order) => {
+      const orderDetail = orderDetails.filter((item) =>
+        item.order_id.equals(order._id)
+      );
+
+      const productsInOrder = orderDetail.map((item) => {
+        const product = products.find(
+          (product) => product._id.toString() === item.product_id.toString()
+        );
+        const images = variations.find(
+          (variation) =>
+            variation._id.toString() === item.variation_id.toString()
+        ).images;
+
+        return {
+          ...item._doc,
+          images,
+          name: product.name,
+        };
+      });
+
+      return {
+        ...order._doc,
+        orderDetail: productsInOrder,
+      };
+    });
+
+    return result;
   }
 }
 const orderService = new OrderService();
