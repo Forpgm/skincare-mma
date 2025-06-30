@@ -80,7 +80,7 @@ app.use("/api/address", addressRouter);
 setupSwagger(app);
 
 //const HOST_NAME = process.env.HOST_NAME;
-const HOST_NAME = "172.0.0.138";
+const HOST_NAME = "localhost";
 const PORT = process.env.PORT;
 
 app.listen(PORT, HOST_NAME, () => {
