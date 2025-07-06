@@ -5,7 +5,37 @@ const { ObjectId } = require("mongodb");
 
 class ProductService {
   async getAllProducts() {
-    const products = await db.Product.find();
+    const products = await db.Product.aggregate([
+      {
+        $lookup: {
+          from: "productvariations",
+          localField: "_id",
+          foreignField: "product_id",
+          as: "variations",
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                images: 1,
+                price: 1,
+                quantity: 1,
+                attributes: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          createdBy: 0,
+          updatedBy: 0,
+          createdAt: 0,
+          updatedAt: 0,
+        },
+      },
+    ]);
+
     return products;
   }
 
