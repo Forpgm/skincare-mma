@@ -71,11 +71,34 @@ class AddressService {
       user_id: new ObjectId(String(userId)),
       is_default: true,
     }).sort({ createdAt: -1 });
-    if (addresses === null) {
+
+    if (!addresses) {
       addresses = await db.Address.findOne({
         user_id: new ObjectId(String(userId)),
       }).sort({ createdAt: -1 });
     }
+
+    if (!addresses) return null;
+
+    addresses = addresses.toObject(); // 👉 FIX: convert Mongoose document to plain object
+
+    const provinceName = await getProvinceById(Number(addresses.province_code));
+    addresses.province_name = provinceName.ProvinceName;
+
+    const districtName = await getDistrictById(
+      Number(addresses.province_code),
+      Number(addresses.district_code)
+    );
+    addresses.district_name = districtName.DistrictName;
+
+    const wardName = await getWardById(
+      Number(addresses.district_code),
+      Number(addresses.ward_code)
+    );
+    addresses.ward_name = wardName.WardName;
+
+    addresses.full_address = `${addresses.address}, ${addresses.ward_name}, ${addresses.district_name}, ${addresses.province_name}`;
+
     return addresses;
   }
 }

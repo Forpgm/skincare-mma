@@ -49,7 +49,6 @@ export const getProvinceById = async (provinceId) => {
 };
 
 export const getDistrictById = async (provinceId, districtId) => {
-  console.log(provinceId, districtId);
   return await axios
     .post(
       `https://online-gateway.ghn.vn/shiip/public-api/master-data/district`,
