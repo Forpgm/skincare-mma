@@ -130,8 +130,6 @@ exports.checkPaymentResultController = async (req, res, next) => {
         orderParam.cartList,
         orderParam
       );
-      // console.log("orderGHN", orderGHN);
-
       // cập nhật lại order với ghn_order_code và expected_delivery_date
       await db.Order.findOneAndUpdate(
         {

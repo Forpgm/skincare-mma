@@ -201,7 +201,7 @@ class ShipServices {
     const body = {
       to_name: orderParams.to_name,
       from_name: "SKINCARE_STORE",
-      from_phone: "0949309132",
+      from_phone: "0979309176",
       from_address:
         "Lô E2a-7, Đường D1, Khu Công nghệ cao, P.Long Thạnh Mỹ, Tp. Thủ Đức, TP.HCM",
       from_ward_name: "Phường Tăng Nhơn Phú B",
