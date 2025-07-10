@@ -237,6 +237,7 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
       message: "payment created successfully",
       result: {
         ...paymentLinkResponse,
+        description: `${order._id} Thanh toan don hang`,
         order_id: order._id,
       },
     });
@@ -261,8 +262,8 @@ exports.checkPayosResultController = async (req, res, next) => {
     }
 
     console.log("data: ", data);
-    const order_id = data.order_id;
-
+    const desc = data.description || "";
+    const order_id = desc.split(" ")[0];
     if (!order_id) {
       return res.status(400).json({ message: "Thiếu order_id" });
     }
