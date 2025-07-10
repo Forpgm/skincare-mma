@@ -253,7 +253,7 @@ exports.checkPayosResultController = async (req, res, next) => {
   try {
     const { code, data } = req.body;
 
-    if (code !== "PAYMENT_SUCCESS") {
+    if (data.code !== "00") {
       console.log(code);
       return res
         .status(400)
