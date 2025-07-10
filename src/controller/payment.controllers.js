@@ -287,12 +287,9 @@ exports.checkPayosResultController = async (req, res, next) => {
     // Transaction
     await db.Transaction.create({
       orderId: order._id,
-      paymentLinkId: data.paymentLinkId,
       amount: data.amount,
       paymentMethod: "PAYOS",
       status: "PAID",
-      paidAt: data.paidAt ? new Date(data.paidAt) : new Date(),
-      raw: data,
     });
 
     return res.status(200).json({
