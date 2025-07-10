@@ -177,7 +177,6 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
     // tạo order cho khách hàng với status là pending - chờ thanh toán
     const orderCode = Math.floor(Date.now() / 1000);
     const order = await db.Order.create({
-      id: orderCode,
       user_id: userId,
       total_quantity: products
         .map((product) => product.quantity)
@@ -196,6 +195,7 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
       to_ward_code,
       phone_number: req.body.phone_number,
       service_id: service_id[0].service_id,
+      order_id: orderCode.toString(),
     });
     // tạo order detail
     const orderDetail = products.map((product) => {
@@ -232,11 +232,7 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
     );
     console.log(body);
     const paymentLinkResponse = await payOS.createPaymentLink(body);
-    await db.Order.findOneAndUpdate(
-      { _id: order._id },
-      { $set: { order_id: paymentLinkResponse.orderId } },
-      { new: true }
-    );
+
     console.log("Payment Link Response:", paymentLinkResponse);
     return res.status(200).json({
       message: "payment created successfully",
@@ -290,7 +286,7 @@ exports.checkPayosResultController = async (req, res, next) => {
 
     // Transaction
     await db.Transaction.create({
-      orderId: order_id,
+      orderId: order._id,
       paymentLinkId: data.paymentLinkId,
       amount: data.amount,
       paymentMethod: "PAYOS",
