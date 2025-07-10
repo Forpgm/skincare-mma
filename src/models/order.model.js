@@ -73,6 +73,11 @@ const OrderSchema = mongoose.Schema(
       required: true,
       default: "PENDING",
     },
+    order_id: {
+      type: String,
+      required: false,
+      unique: true,
+    },
   },
   { timestamps: true }
 );

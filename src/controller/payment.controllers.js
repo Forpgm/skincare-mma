@@ -232,12 +232,16 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
     );
     console.log(body);
     const paymentLinkResponse = await payOS.createPaymentLink(body);
+    await db.Order.findOneAndUpdate(
+      { _id: order._id },
+      { $set: { order_id: paymentLinkResponse.orderId } },
+      { new: true }
+    );
     console.log("Payment Link Response:", paymentLinkResponse);
     return res.status(200).json({
       message: "payment created successfully",
       result: {
         ...paymentLinkResponse,
-        description: `${order._id} Thanh toan don hang`,
         order_id: order._id,
       },
     });
@@ -262,14 +266,13 @@ exports.checkPayosResultController = async (req, res, next) => {
     }
 
     console.log("data: ", data);
-    const desc = data.description || "";
-    const order_id = desc.split(" ")[0];
-    if (!order_id) {
-      return res.status(400).json({ message: "Thiếu order_id" });
+    const orderIdPayOs = data.orderCode;
+    if (!orderIdPayOs) {
+      return res.status(400).json({ message: "Thiếu orderIdPayOs" });
     }
     // Order + ngày giao dự kiến (5 ngày sau)
     const order = await db.Order.findOneAndUpdate(
-      { _id: order_id },
+      { order_id: orderIdPayOs },
       {
         $set: {
           status: ORDER_STATUS.DELIVERING,
