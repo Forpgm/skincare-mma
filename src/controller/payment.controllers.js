@@ -233,12 +233,18 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
     console.log(body);
     const paymentLinkResponse = await payOS.createPaymentLink(body);
     console.log("Payment Link Response:", paymentLinkResponse);
-    return res.status(200).json({ paymentUrl: paymentLinkResponse });
+    return res.status(200).json({
+      message: "payment created successfully",
+      result: {
+        ...paymentLinkResponse,
+        order_id: order._id,
+      },
+    });
   } catch (error) {
-    console.error("Error creating payment link:", error); // Cũ
+    console.error("Error creating payment link:", error);
     console.error("Error stack:", error.stack); // Thêm vào
     if (error.response) {
-      console.error("Error response:", error.response.data); // Nếu là lỗi HTTP từ PayOS
+      console.error("Error response:", error.response.data);
     }
     return res.status(500).json({ error: "Failed to create payment link" });
   }
