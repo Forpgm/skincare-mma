@@ -259,15 +259,16 @@ exports.checkPayosResultController = async (req, res, next) => {
         .json({ message: "Không phải thanh toán thành công" });
     }
 
-    const orderId = data.order_id;
+    const orderCode = data.orderCode;
 
-    if (!orderId) {
-      return res.status(400).json({ message: "Thiếu order_id" });
+    if (!orderCode) {
+      return res.status(400).json({ message: "Thiếu orderCode" });
     }
+    console.log("Order Code:", orderCode);
 
     // Order + ngày giao dự kiến (5 ngày sau)
     const order = await db.Order.findOneAndUpdate(
-      { _id: orderId },
+      { _id: orderCode },
       {
         $set: {
           status: ORDER_STATUS.DELIVERING,
