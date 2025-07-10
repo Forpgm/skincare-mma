@@ -254,6 +254,7 @@ exports.checkPayosResultController = async (req, res, next) => {
     const { code, data } = req.body;
 
     if (code !== "PAYMENT_SUCCESS") {
+      console.log(code);
       return res
         .status(400)
         .json({ message: "Không phải thanh toán thành công" });
