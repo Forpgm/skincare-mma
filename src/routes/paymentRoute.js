@@ -31,7 +31,7 @@ payRouter.post(
   createPaymentValidator,
   createPaymentPayosUrlController
 );
-router.post("/payos/webhook", (req, res) => {
+payRouter.post("/payos/webhook", (req, res) => {
   console.log("Webhook received", req.body);
   res.status(200).send("OK");
 });
