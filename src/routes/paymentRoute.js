@@ -14,6 +14,7 @@ const {
   createPaymentController,
   checkPaymentResultController,
   createPaymentPayosUrlController,
+  checkPayosResultController,
 } = require("../controller/payment.controllers");
 
 const payRouter = express.Router();
@@ -31,9 +32,6 @@ payRouter.post(
   createPaymentValidator,
   createPaymentPayosUrlController
 );
-payRouter.post("/payos/webhook", (req, res) => {
-  console.log("Webhook received", req.body);
-  res.status(200).send("OK");
-});
+payRouter.post("/payos/webhook", checkPayosResultController);
 
 exports.payRouter = payRouter;

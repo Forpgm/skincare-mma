@@ -249,3 +249,57 @@ exports.createPaymentPayosUrlController = async (req, res, next) => {
     return res.status(500).json({ error: "Failed to create payment link" });
   }
 };
+exports.checkPayosResultController = async (req, res, next) => {
+  try {
+    const { code, data } = req.body;
+
+    if (code !== "PAYMENT_SUCCESS") {
+      return res
+        .status(400)
+        .json({ message: "Không phải thanh toán thành công" });
+    }
+
+    const orderId = data.order_id;
+
+    if (!orderId) {
+      return res.status(400).json({ message: "Thiếu order_id" });
+    }
+
+    // Order + ngày giao dự kiến (5 ngày sau)
+    const order = await db.Order.findOneAndUpdate(
+      { _id: orderId },
+      {
+        $set: {
+          status: ORDER_STATUS.DELIVERING,
+          expected_delivery_date: new Date(
+            Date.now() + 5 * 24 * 60 * 60 * 1000
+          ),
+        },
+      },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    // Transaction
+    await db.Transaction.create({
+      orderId: orderId,
+      paymentLinkId: data.paymentLinkId,
+      amount: data.amount,
+      paymentMethod: "PAYOS",
+      status: "PAID",
+      paidAt: data.paidAt ? new Date(data.paidAt) : new Date(),
+      raw: data,
+    });
+
+    return res.status(200).json({
+      code: "SUCCESS",
+      message: "Cập nhật đơn hàng và lưu giao dịch thành công",
+    });
+  } catch (error) {
+    console.error("PayOS Webhook error:", error);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+};
