@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const TransactionSchema = new mongoose.Schema(
   {
     orderId: { type: String, required: true, unique: true }, // Mã đơn hàng nội bộ
-    appTransId: { type: String, require: false, unique: true }, // Mã giao dịch ZaloPay
+    appTransId: { type: String, require: false }, // Mã giao dịch ZaloPay
     zpTransId: { type: Number, default: null }, // Mã giao dịch bên ZaloPay
     amount: { type: Number, required: true }, // Số tiền thanh toán
     status: {
