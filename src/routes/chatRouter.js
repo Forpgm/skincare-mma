@@ -19,20 +19,72 @@ chatRouter.post("/", async (req, res) => {
   }
 });
 
+const mongoose = require("mongoose");
+
 chatRouter.get("/:userId/:adminId", async (req, res) => {
   const { userId, adminId } = req.params;
 
   try {
-    const messages = await await db.Chat.find({
+    // Ép kiểu ObjectId cho đúng với dữ liệu MongoDB
+    const userObjectId = mongoose.Types.ObjectId.createFromHexString(userId);
+    const adminObjectId = mongoose.Types.ObjectId.createFromHexString(adminId);
+
+    const messages = await Chat.find({
       $or: [
-        { senderId: userId, receiverId: adminId },
-        { senderId: adminId, receiverId: userId },
+        { senderId: userObjectId, receiverId: adminObjectId },
+        { senderId: adminObjectId, receiverId: userObjectId },
       ],
     }).sort({ createdAt: 1 });
 
-    res
-      .status(200)
-      .json({ message: "Lấy tin nhắn thành công", data: messages });
+    // Lấy thông tin người dùng
+    const [user, admin] = await Promise.all([
+      db.Account.findById(userId).select("username avatar_url"),
+      db.Account.findById(adminId).select("username avatar_url"),
+    ]);
+
+    if (!user || !admin) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy user hoặc admin" });
+    }
+
+    const data = messages.map((msg) => {
+      const sender =
+        msg.senderId.toString() === userId
+          ? {
+              _id: user._id,
+              username: user.username,
+              avatar_url: user.avatar_url,
+            }
+          : {
+              _id: admin._id,
+              username: admin.username,
+              avatar_url: admin.avatar_url,
+            };
+
+      const receiver =
+        msg.receiverId.toString() === userId
+          ? {
+              _id: user._id,
+              username: user.username,
+              avatar_url: user.avatar_url,
+            }
+          : {
+              _id: admin._id,
+              username: admin.username,
+              avatar_url: admin.avatar_url,
+            };
+
+      return {
+        _id: msg._id,
+        content: msg.content,
+        createdAt: msg.createdAt,
+        sender,
+        receiver,
+      };
+    });
+
+    res.status(200).json({ message: "Lấy tin nhắn thành công", data });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }

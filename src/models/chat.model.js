@@ -2,9 +2,14 @@ const mongoose = require("mongoose");
 
 const ChatSchema = mongoose.Schema(
   {
-    senderId: String,
-    receiverId: String,
-    senderRole: { type: String, enum: ["USER", "ADMIN"], required: true },
+    senderId: {
+      type: String,
+      required: true,
+    },
+    receiverId: {
+      type: String,
+      required: true,
+    },
     content: String,
   },
   { timestamps: true }
