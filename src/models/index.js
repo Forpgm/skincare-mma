@@ -22,6 +22,7 @@ const Voucher = require("./voucher.model");
 
 const Address = require("./address.model");
 const Transaction = require("./transaction.model");
+const Chat = require("./chat.model");
 
 const db = {};
 
@@ -47,6 +48,7 @@ db.Transaction = Transaction;
 
 db.Voucher = Voucher;
 db.Address = Address;
+db.Chat = Chat;
 
 db.connectDb = async () => {
   try {
