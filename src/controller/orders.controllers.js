@@ -44,7 +44,11 @@ async function checkAndUpdateOrders() {
 setInterval(checkAndUpdateOrders, 60 * 100);
 exports.getOrdersByCriteriaController = async (req, res, next) => {
   try {
-    const result = await orderService.getOrdersByCriteria(req.query.status);
+    const { userId } = req.decoded_authorization;
+    const result = await orderService.getOrdersByCriteria(
+      req.query.status,
+      userId
+    );
     return res.json({
       message: "Get orders successfully",
       result,

@@ -203,9 +203,10 @@ class OrderService {
     return await db.Order.find();
   }
 
-  async getOrdersByCriteria(status) {
+  async getOrdersByCriteria(status, user_id) {
     const orders = await db.Order.find({
       status: status.toUpperCase(),
+      user_id: new ObjectId(user_id),
     });
 
     const orderDetails = await db.OrderDetail.find({
